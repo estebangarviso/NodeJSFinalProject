@@ -1,0 +1,9 @@
+{
+  "name": "NodeJSFinalProject",
+  "version": "0.1.0",
+  "description": "An e2e test for nodejs certification on Escalab Academy",
+  "main": "index.js",
+  "repository": "https://github.com/estebangarviso/NodeJSFinalProject.git",
+  "author": "Esteban Garviso",
+  "license": "MIT"
+}
