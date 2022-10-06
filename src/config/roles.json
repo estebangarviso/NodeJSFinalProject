@@ -1,0 +1,10 @@
+{
+  "1": {
+    "name": "salesman",
+    "description": "User can sale articles to customers"
+  },
+  "2": {
+    "name": "customer",
+    "description": "User can buy articles from salesman"
+  }
+}

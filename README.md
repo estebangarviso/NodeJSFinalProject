@@ -2,8 +2,6 @@
 
 <h1 align="center">Ecommerce backend with Node.js</h1>
 
-<hr/>
-
 ## e2e Testing steps
 
 - [x] Record a new user as a customer
