@@ -55,6 +55,7 @@ UserRouter.route('/user/signup').post(
   validatorCompiler(storeUserSchema, 'body'),
   async (req, res, next) => {
     try {
+      /* eslint-disable */
       const {
         body: { firstName, lastName, email, password, roleId }
       } = req

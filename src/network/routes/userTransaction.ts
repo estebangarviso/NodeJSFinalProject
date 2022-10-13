@@ -50,6 +50,7 @@ TransactionRouter.route('/transfer/user/:id')
     auth.verifyIsCurrentUser(),
     async (req, res, next) => {
       try {
+        /* eslint-disable */
         const {
           currentUser,
           body: { givenTo, amount },
@@ -195,9 +196,7 @@ TransactionRouter.route('/transfer/owner/:id')
             res,
             status: 200
           })
-        } else {
-          throw new httpErrors.BadRequest('Invalid status')
-        }
+        } else throw new httpErrors.BadRequest('Invalid status')
       } catch (error) {
         next(error)
       }

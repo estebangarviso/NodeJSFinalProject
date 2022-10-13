@@ -8,7 +8,13 @@ import currencyRouter from './routes/currency'
 import roleRouter from './routes/role'
 import response from './routes/response'
 
-const routers = [articleRouter, userRouter, userTransactionRouter, currencyRouter, roleRouter]
+const routers = [
+  articleRouter,
+  userRouter,
+  userTransactionRouter,
+  currencyRouter,
+  roleRouter
+]
 
 const applyRoutes = (app: Application) => {
   routers.forEach(router => app.use('/api', router))

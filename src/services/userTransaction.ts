@@ -40,7 +40,9 @@ export default class UserTransactionService {
     if (!this.#givenTo)
       throw new httpErrors.BadRequest('Missing required field: givenTo')
 
-    let userId, givenTo, entry
+    let userId
+    let givenTo
+    let entry
     if (this.#userId === this.#givenTo) {
       const userService = new UserService({ userId: this.#userId })
       const foundUser = await userService.verifyUserExists()
@@ -88,6 +90,7 @@ export default class UserTransactionService {
 
     foundTransaction.status = 'paid'
     const savedTransaction = await foundTransaction.save()
+
     return savedTransaction.toObject()
   }
 

@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { SECRET } from '../../../config'
 
 import jwt, { UserJwtPayload } from 'jsonwebtoken'
@@ -26,7 +27,7 @@ const validateUserPayload: (payload: UserJwtPayload) => {
   email: IUser['email']
   password: string
 } = payload => {
-  const { email, password, iat, exp, ...rest } = payload
+  const { email, password, ...rest } = payload
 
   if (!email) throw new httpErrors.Unauthorized(NOT_ALLOWED_TO_BE_HERE)
 
@@ -92,13 +93,15 @@ const verifyUser = (): RequestHandler => {
 
       if (isLoginCorrect) {
         req.currentUser = {
-          id: user.id
+          id: user.id as string
         }
+
         return next()
       }
 
       return next(new httpErrors.Unauthorized(NOT_ALLOWED_TO_BE_HERE))
     } catch (error: any) {
+      /* eslint-disable */
       return handleError(error, next)
     }
   }
@@ -157,6 +160,7 @@ const verifyIsCurrentUser = (): RequestHandler => {
         req.currentUser = {
           id: user.id
         }
+
         return next()
       }
 

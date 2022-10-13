@@ -28,7 +28,7 @@ const validatorCompiler = (
 
     if (!ok && validate.errors) {
       const [error] = validate.errors
-      const errorMessage = `${error.instancePath} ${error.message}`
+      const errorMessage = `${error.instancePath} ${error.message as string}`
 
       return next(new httpErrors.UnprocessableEntity(errorMessage))
     }

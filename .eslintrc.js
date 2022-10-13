@@ -12,6 +12,9 @@ https://github.com/typescript-eslint/tslint-to-eslint-config/blob/master/docs/FA
 Happy linting! 💖
 */
 module.exports = {
+  parserOptions: {
+    project: './tsconfig.json'
+  },
   env: {
     node: true,
     commonjs: true,

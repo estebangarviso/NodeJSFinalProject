@@ -115,6 +115,7 @@ export default class ArticleService {
     if (!this.#id) throw new BadRequest('Missing required field: id')
 
     const article = await updateOneArticle(this.#id, {
+      sku: this.#sku,
       title: this.#title,
       shortDescription: this.#shortDescription,
       unity: this.#unity,

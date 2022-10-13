@@ -76,8 +76,9 @@ export default class OrderService {
       throw new httpErrors.BadRequest('Invalid articleId')
 
     const details = this.#details.map(detail => {
-      const article = articles.find(article => article.id === detail.articleId)
+      const article = articles.find(art => art.id === detail.articleId)
       if (!article) throw new httpErrors.NotFound('Article not found')
+
       return {
         articleId: article._id,
         unitPrice: article.unitPrice,
@@ -100,6 +101,7 @@ export default class OrderService {
       total,
       status: this.#status
     }
+
     return await saveOrder(order)
   }
 
@@ -126,8 +128,9 @@ export default class OrderService {
       throw new httpErrors.BadRequest('Invalid articleId')
 
     const details = this.#details.map(detail => {
-      const article = articles.find(article => article.id === detail.articleId)
+      const article = articles.find(art => art.id === detail.articleId)
       if (!article) throw new httpErrors.NotFound('Article not found')
+
       return {
         articleId: article._id,
         unitPrice: article.unitPrice,
@@ -146,6 +149,7 @@ export default class OrderService {
       total,
       status: this.#status
     }
+    // eslint-disable-next-line
     return await updateOneOrder(this.#trackingNumber, order)
   }
 }

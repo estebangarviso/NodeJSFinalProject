@@ -1,3 +1,4 @@
+/* eslint-disable */
 import logger from 'loglevel'
 import chalk from 'chalk'
 import { LOG_LEVEL } from './index'
@@ -30,11 +31,10 @@ console.debug = function (message: any, ...optionalParams: any[]) {
   const callers = stack?.split('at ')
   let traceString = ''
   if (callers && callers.length > 2)
-    for (let i = 2; i < callers.length; i++) {
+    for (let i = 2; i < callers.length; i++)
       // exclude node_modules
       if (!callers[i].includes('node_modules'))
         traceString += `\r    at ${callers[i]}`
-    }
 
   logger.debug(
     chalk.magenta(`[app] 🟣 `, message),

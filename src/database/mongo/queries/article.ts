@@ -3,6 +3,7 @@ import { HydratedDocument } from 'mongoose'
 
 /**
  * It saves an article to the database
+ *
  * @returns A promise that resolves to the saved article
  */
 export const saveArticle: (
@@ -17,6 +18,7 @@ export const saveArticle: (
 
 /**
  * It gets an article by its ID
+ *
  * @returns found article
  */
 export const getArticleByID: (
@@ -29,6 +31,7 @@ export const getArticleByID: (
 
 /**
  * It gets all articles by its ID
+ *
  * @returns found articles
  */
 export const getAllArticlesByID: (
@@ -44,6 +47,7 @@ export const getAllArticlesByID: (
 
 /**
  * It gets all articles
+ *
  * @returns found articles
  */
 export const getAllArticles: () => Promise<
@@ -56,6 +60,7 @@ export const getAllArticles: () => Promise<
 
 /**
  * It removes an article by its ID (soft delete)
+ *
  * @returns found article
  */
 export const removeArticleByID: (
@@ -71,6 +76,7 @@ export const removeArticleByID: (
 
 /**
  * It updates an article if is not deleted by its ID
+ *
  * @returns updated article
  */
 export const updateOneArticle: (
@@ -90,6 +96,7 @@ export const updateOneArticle: (
 
 /**
  * It returns the first article that matches the query
+ *
  * @param {Object} query - The query object that will be used to find the article.
  * @returns found article
  */
@@ -97,5 +104,6 @@ export const getOneArticle: (
   query: object
 ) => Promise<HydratedDocument<IArticle>> = async query => {
   const articles = await ArticleModel.find(query)
+
   return articles[0]
 }

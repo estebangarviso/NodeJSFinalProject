@@ -33,15 +33,15 @@ const CurrencySchema = new Schema(
     },
     decimals: {
       required: true,
-      type: Number,
+      type: Number
     },
     sign: {
       required: true,
-      type: String,
+      type: String
     },
     isDefault: {
       required: true,
-      type: Boolean,
+      type: Boolean
     }
   },
   {

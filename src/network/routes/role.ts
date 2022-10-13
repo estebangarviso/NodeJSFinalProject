@@ -10,6 +10,7 @@ const RoleRouter = Router()
 RoleRouter.route('/role').post(
   validatorCompiler(storeRoleSchema, 'body'),
   async (req, res, next) => {
+    /* eslint-disable */
     const {
       body: { id, name }
     } = req

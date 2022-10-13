@@ -32,6 +32,7 @@ ArticleRouter.route('/article')
     auth.verifyByRole('salesman'),
     async (req, res, next) => {
       try {
+        /* eslint-disable */
         const {
           body: {
             sku,
@@ -114,7 +115,9 @@ ArticleRouter.route('/article/:id')
     auth.verifyByRole('salesman'),
     async (req, res, next) => {
       const {
+        /* eslint-disable */
         body: {
+          sku,
           title,
           shortDescription,
           unity,
@@ -127,7 +130,16 @@ ArticleRouter.route('/article/:id')
       } = req
 
       try {
-        const articleService = new ArticleService({ id })
+        const articleService = new ArticleService({
+          id,
+          title,
+          shortDescription,
+          unity,
+          qtyStock,
+          unitPrice,
+          isVirtual,
+          isAvailable
+        })
 
         response({
           error: false,

@@ -21,6 +21,7 @@ export const saveUser: (
 
 /**
  * It gets a user by its ID
+ *
  * @returns found user
  */
 export const getUserByID: (
@@ -33,6 +34,7 @@ export const getUserByID: (
 
 /**
  * It gets all users
+ *
  * @returns found users
  */
 export const getAllUsers: () => Promise<
@@ -45,6 +47,7 @@ export const getAllUsers: () => Promise<
 
 /**
  * It removes a user by its ID
+ *
  * @returns found user
  */
 export const removeUserByID: (
@@ -58,6 +61,7 @@ export const removeUserByID: (
 // TODO: update role if necessary
 /**
  * It updates a user by its ID
+ *
  * @returns updated user
  */
 export const updateOneUser: (

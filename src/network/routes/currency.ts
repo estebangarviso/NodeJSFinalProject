@@ -11,6 +11,7 @@ CurrencyRouter.route('/currency')
   .post(
     validatorCompiler(storeCurrencySchema, 'body'),
     async (req, res, next) => {
+      /* eslint-disable */
       const {
         body: { id, name, symbol, rate, decimals, sign, isDefault }
       } = req
