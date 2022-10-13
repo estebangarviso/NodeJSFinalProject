@@ -7,25 +7,26 @@ import {
   getAllOrders,
   updateOneOrder
 } from '../database/mongo/queries/order'
-import { getOneUserTransaction } from '../database/mongo/queries/userTransaction'
+import { getUserTransactionsBalance } from '../database/mongo/queries/userTransaction'
 import { getDefaultCurrency } from '../database/mongo/queries/currency'
 import { getAllArticlesByID } from '../database/mongo/queries/article'
 import UserService from './user'
+import UserTransactionService from './userTransaction'
 import { ORDER_STATUS } from '../utils/order'
 
 export default class OrderService {
   #trackingNumber
-  #userTransactionId
   #userId
-  #details
+  #receiverId
   #total
+  #details
   #status
 
   constructor(
     args: {
       trackingNumber?: string
-      userTransactionId?: string
       userId?: string
+      receiverId?: string
       details?: TBeforeSaveOrder['details']
       total?: number
       status?: string
@@ -33,15 +34,15 @@ export default class OrderService {
   ) {
     const {
       trackingNumber = '',
-      userTransactionId = '',
       userId = '',
+      receiverId = '',
       details = [],
       total = 0,
       status = ''
     } = args
     this.#trackingNumber = trackingNumber
-    this.#userTransactionId = userTransactionId
     this.#userId = userId
+    this.#receiverId = receiverId
     this.#details = details
     this.#total = total
     this.#status = status
@@ -50,10 +51,10 @@ export default class OrderService {
   async saveOrder() {
     if (!this.#userId)
       throw new httpErrors.BadRequest('Missing required field: userId')
+    if (!this.#receiverId)
+      throw new httpErrors.BadRequest('Missing required field: receiverId')
     if (!this.#details)
       throw new httpErrors.BadRequest('Missing required field: details')
-    if (!this.#total)
-      throw new httpErrors.BadRequest('Missing required field: total')
     if (!this.#status)
       throw new httpErrors.BadRequest('Missing required field: status')
     if (!ORDER_STATUS.includes(`${this.#status}`))
@@ -64,9 +65,11 @@ export default class OrderService {
     const user = await new UserService({
       userId: this.#userId
     }).verifyUserExists()
-    const userId = user._id
-
-    const userTransaction = await getOneUserTransaction(this.#userTransactionId)
+    const receiver = await new UserService({
+      userId: this.#receiverId
+    }).verifyUserExists()
+    /* eslint-disable */
+    const currentBalance = await getUserTransactionsBalance(user.id)
     const defaultCurrency = await getDefaultCurrency()
     const currencyId = defaultCurrency._id
     const currencyRate = defaultCurrency.rate
@@ -91,10 +94,21 @@ export default class OrderService {
     }, 0)
     const total = sumSubTotal * currencyRate
 
+    if (currentBalance < total)
+      throw new httpErrors.BadRequest('Insufficient balance')
+    const userTransactionService = new UserTransactionService({
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      userId: user.id,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      givenTo: receiver.id,
+      amount: total
+    })
+    const userTransaction = await userTransactionService.saveUserTransaction()
+
     const order = {
       trackingNumber: nanoid(),
       userTransactionId: userTransaction._id,
-      userId,
+      userId: user._id,
       currencyId,
       currencyRate,
       details,

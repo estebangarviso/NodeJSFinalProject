@@ -18,7 +18,3 @@ export const orderTrackingNumberSchema = Type.Object({
 })
 
 export const updateOrderSchema = Type.Partial(storeOrderSchema)
-
-export const orderStatusSchema = Type.Object({
-  status: Type.String()
-})

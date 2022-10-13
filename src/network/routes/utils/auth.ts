@@ -24,10 +24,10 @@ const getToken: (authorization: string) => string = authorization => {
 }
 
 const validateUserPayload: (payload: UserJwtPayload) => {
-  email: IUser['email']
+  email: string
   password: string
 } = payload => {
-  const { email, password, ...rest } = payload
+  const { email, password, iat, exp, ...rest } = payload
 
   if (!email) throw new httpErrors.Unauthorized(NOT_ALLOWED_TO_BE_HERE)
 

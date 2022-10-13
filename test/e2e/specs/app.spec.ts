@@ -2,6 +2,7 @@ import axios from 'axios'
 import server from '../../../src/network/server'
 import { faker } from '@faker-js/faker'
 import { TUser } from '../../../src/database/mongo/models/user'
+import { IArticle } from '../../../src/database/mongo/models/article'
 
 beforeAll(async () => {
   await server.start()
@@ -77,6 +78,12 @@ describe('E2E tests: Use cases for the App', () => {
     salesman?: TUser
   } = {}
 
+  const articles: {
+    one?: any
+    two?: any
+    three?: any
+  } = {}
+
   describe('POST /api/user', () => {
     it('should be able to create (sign up) a new customer', async () => {
       const response = await axios.post('/user/signup', newCustomer)
@@ -109,30 +116,29 @@ describe('E2E tests: Use cases for the App', () => {
         expect(Object.keys(message)).toEqual(keys)
         salesmanTokens.accessToken = message.accessToken
         salesmanTokens.refreshToken = message.refreshToken
-      })
-  }),
-    describe('GET /api/user', () => {
-      it('should be able to get customer profile data', async () => {
-        const response = await axios.get('/user/profile', {
-          headers: {
-            Authorization: `Bearer ${customerTokens.accessToken}`
-          }
-        })
-        const { data: message } = response
-        expect(response.status).toBe(200)
-        expect(message).toHaveProperty('firstName')
-        expect(message).toHaveProperty('lastName')
-        expect(message).toHaveProperty('email')
-        expect(message).toHaveProperty('roleId')
-        expect(message).toHaveProperty('id')
-        expect(message).toHaveProperty('createdAt')
-        expect(message).toHaveProperty('updatedAt')
-        profiles.customer = message
       }),
-        it('should be able to get salesman profile data', async () => {
-          const response = await axios.get('/user/profile', {
+      it('salesman should be able to save a new articles', async () => {
+        const articleProcessed: [] | IArticle[] = []
+        for (const article of newArticles) {
+          const { data } = await axios.post<{
+            message: IArticle
+          }>('/article', article, {
             headers: {
               Authorization: `Bearer ${salesmanTokens.accessToken}`
+            }
+          })
+          articleProcessed.push(data.message)
+        }
+        expect(articleProcessed.length).toBe(3)
+        articles.one = articleProcessed[0]
+        articles.two = articleProcessed[1]
+        articles.three = articleProcessed[2]
+      }),
+      describe('GET /api/user', () => {
+        it('should be able to get customer profile data with access token', async () => {
+          const response = await axios.get('/user/profile', {
+            headers: {
+              Authorization: `Bearer ${customerTokens.accessToken}`
             }
           })
           const { data: message } = response
@@ -144,56 +150,96 @@ describe('E2E tests: Use cases for the App', () => {
           expect(message).toHaveProperty('id')
           expect(message).toHaveProperty('createdAt')
           expect(message).toHaveProperty('updatedAt')
-          profiles.salesman = message
+          profiles.customer = message
         }),
-        it('the customer should be able to transfer cash to himself', async () => {
-          if (!profiles.customer)
-            throw new Error('Customer profile is not defined')
-          const {
-            data: { message: user }
-          } = await axios.get(`/transfer/user/${profiles.customer.id}`, {
-            headers: {
-              authorization: `Bearer ${customerTokens.accessToken}`
-            }
-          })
-          const amount = 1000
-          const {
-            data: { message: credit }
-          } = await axios.post(
-            `/transfer/user/${user.id}`,
-            { amount },
-            {
+          it('should be able to get salesman profile data with access token', async () => {
+            const response = await axios.get('/user/profile', {
+              headers: {
+                Authorization: `Bearer ${salesmanTokens.accessToken}`
+              }
+            })
+            const { data: message } = response
+            expect(response.status).toBe(200)
+            expect(message).toHaveProperty('firstName')
+            expect(message).toHaveProperty('lastName')
+            expect(message).toHaveProperty('email')
+            expect(message).toHaveProperty('roleId')
+            expect(message).toHaveProperty('id')
+            expect(message).toHaveProperty('createdAt')
+            expect(message).toHaveProperty('updatedAt')
+            profiles.salesman = message
+          }),
+          test('customer tries to bought an article with any money, should be rejected', async () => {
+            const response = await axios.post('/order', {
+              data: {
+                status: 'pending',
+                details: [
+                  {
+                    articleId: articles.one._id,
+                    quantity: faker.random.numeric(1)
+                  },
+                  {
+                    articleId: articles.two._id,
+                    quantity: faker.random.numeric(1)
+                  },
+                  {
+                    articleId: articles.three._id,
+                    quantity: faker.random.numeric(1)
+                  }
+                ]
+              }
+            })
+          }),
+          it('the customer should be able to transfer cash to himself', async () => {
+            if (!profiles.customer)
+              throw new Error('Customer profile is not defined')
+            const {
+              data: { message: user }
+            } = await axios.get(`/transfer/user/${profiles.customer.id}`, {
               headers: {
                 authorization: `Bearer ${customerTokens.accessToken}`
               }
-            }
-          )
-          expect(credit.amount).toBe(amount)
-          expect(credit.status).toBe('paid')
-        }),
-        it('the salesman should be able to approve transaction', async () => {
-          if (!profiles.salesman)
-            throw new Error('Salesman profile is not defined')
-          const response = await axios.get(
-            `/transfer/owner/${profiles.salesman.id}`,
-            {
-              headers: {
-                authorization: `Bearer ${salesmanTokens.accessToken}`
-              },
-              data: {
-                status: 'paid'
+            })
+            const amount = newAmountToDeposit
+            const {
+              data: { message: credit }
+            } = await axios.post(
+              `/transfer/user/${user.id}`,
+              { amount },
+              {
+                headers: {
+                  authorization: `Bearer ${customerTokens.accessToken}`
+                }
               }
-            }
-          )
+            )
+            expect(credit.amount).toBe(amount)
+            expect(credit.status).toBe('paid')
+            expect(credit.entry).toBe('debit') // accounting double entry. The ownership of the money is transferred from the customer to the customer so the ecommerce is holding the customer's money
+          }),
+          it('the salesman should be able to approve transaction', async () => {
+            if (!profiles.salesman)
+              throw new Error('Salesman profile is not defined')
+            const response = await axios.get(
+              `/transfer/owner/${profiles.salesman.id}`,
+              {
+                headers: {
+                  authorization: `Bearer ${salesmanTokens.accessToken}`
+                },
+                data: {
+                  status: 'paid'
+                }
+              }
+            )
 
-          const { data: message } = response
-          expect(response.status).toBe(200)
-          expect(message).toHaveProperty('amount')
-          expect(message).toHaveProperty('status')
-          expect(message).toHaveProperty('id')
-          expect(message).toHaveProperty('userId')
-          expect(message).toHaveProperty('createdAt')
-          expect(message).toHaveProperty('updatedAt')
-        })
-    })
+            const { data: message } = response
+            expect(response.status).toBe(200)
+            expect(message).toHaveProperty('amount')
+            expect(message).toHaveProperty('status')
+            expect(message).toHaveProperty('id')
+            expect(message).toHaveProperty('userId')
+            expect(message).toHaveProperty('createdAt')
+            expect(message).toHaveProperty('updatedAt')
+          })
+      })
+  })
 })
