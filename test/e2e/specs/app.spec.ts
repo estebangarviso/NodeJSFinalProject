@@ -1,6 +1,7 @@
 import axios from 'axios'
 import server from '../../../src/network/server'
 import { faker } from '@faker-js/faker'
+import { TUser } from '../../../src/database/mongo/models/user'
 
 beforeAll(async () => {
   await server.start()
@@ -15,53 +16,110 @@ describe('E2E tests: Use cases for the App', () => {
   const lastName = faker.name.lastName()
   const email = faker.internet.email(firstName, lastName).toLowerCase()
   const password = faker.internet.password(8)
-  const newUser = {
+  const newCustomer = {
     firstName,
     lastName,
     email,
-    password
+    password,
+    roleId: 2
   }
-
-  const tokens = {
+  const newSalesman = {
+    firstName,
+    lastName,
+    email,
+    password,
+    roleId: 1
+  }
+  const customerTokens = {
     accessToken: '',
     refreshToken: ''
   }
+  const salesmanTokens = {
+    accessToken: '',
+    refreshToken: ''
+  }
+  const profiles: {
+    customer?: TUser
+    salesman?: TUser
+  } = {}
 
-  const userId = ''
   describe('POST /api/user', () => {
-    it('should be able to create (sign up) a new user', async () => {
-      const response = await axios.post('/user/signup', newUser)
+    it('should be able to create (sign up) a new customer', async () => {
+      const response = await axios.post('/user/signup', newCustomer)
       expect(response.status).toBe(201)
     }),
-      it('should be able to login a user and get an access tokens', async () => {
+      it('should be able to login a customer and get an access tokens', async () => {
         const keys = ['accessToken', 'refreshToken']
         const {
           data: { message }
         } = await axios.post('/user/login', {
-          email: newUser.email,
-          password: newUser.password
+          email: newCustomer.email,
+          password: newCustomer.password
         })
         expect(Object.keys(message)).toEqual(keys)
-        tokens.accessToken = message.accessToken
-        tokens.refreshToken = message.refreshToken
+        customerTokens.accessToken = message.accessToken
+        customerTokens.refreshToken = message.refreshToken
+      }),
+      it('should be able to create (sign up) a new salesman', async () => {
+        const response = await axios.post('/user/signup', newSalesman)
+        expect(response.status).toBe(201)
+      }),
+      it('should be able to login a salesman and get an access tokens', async () => {
+        const keys = ['accessToken', 'refreshToken']
+        const {
+          data: { message }
+        } = await axios.post('/user/login', {
+          email: newSalesman.email,
+          password: newSalesman.password
+        })
+        expect(Object.keys(message)).toEqual(keys)
+        salesmanTokens.accessToken = message.accessToken
+        salesmanTokens.refreshToken = message.refreshToken
       })
   }),
     describe('GET /api/user', () => {
-      it('should be able to get user data', async () => {
+      it('should be able to get customer profile data', async () => {
         const response = await axios.get('/user/profile', {
           headers: {
-            Authorization: `Bearer ${tokens.accessToken}`
+            Authorization: `Bearer ${customerTokens.accessToken}`
           }
         })
         const { data: message } = response
         expect(response.status).toBe(200)
+        expect(message).toHaveProperty('firstName')
+        expect(message).toHaveProperty('lastName')
+        expect(message).toHaveProperty('email')
+        expect(message).toHaveProperty('roleId')
+        expect(message).toHaveProperty('id')
+        expect(message).toHaveProperty('createdAt')
+        expect(message).toHaveProperty('updatedAt')
+        profiles.customer = message
       }),
-        it('should be able to transfer cash to himself as credit', async () => {
+        it('should be able to get salesman profile data', async () => {
+          const response = await axios.get('/user/profile', {
+            headers: {
+              Authorization: `Bearer ${salesmanTokens.accessToken}`
+            }
+          })
+          const { data: message } = response
+          expect(response.status).toBe(200)
+          expect(message).toHaveProperty('firstName')
+          expect(message).toHaveProperty('lastName')
+          expect(message).toHaveProperty('email')
+          expect(message).toHaveProperty('roleId')
+          expect(message).toHaveProperty('id')
+          expect(message).toHaveProperty('createdAt')
+          expect(message).toHaveProperty('updatedAt')
+          profiles.salesman = message
+        }),
+        it('the customer should be able to transfer cash to himself and wait until salesman approved transaction', async () => {
+          if (!profiles.customer)
+            throw new Error('Customer profile is not defined')
           const {
             data: { message: user }
-          } = await axios.get(`/transfer/user/${userId}`, {
+          } = await axios.get(`/transfer/user/${profiles.customer.id}`, {
             headers: {
-              authorization: `Bearer ${tokens.accessToken}`
+              authorization: `Bearer ${customerTokens.accessToken}`
             }
           })
           const amount = 1000
@@ -72,11 +130,36 @@ describe('E2E tests: Use cases for the App', () => {
             { amount },
             {
               headers: {
-                authorization: `Bearer ${tokens.accessToken}`
+                authorization: `Bearer ${customerTokens.accessToken}`
               }
             }
           )
           expect(credit.amount).toBe(amount)
+          expect(credit.status).toBe('pending')
+        }),
+        it('the salesman should be able to approve transaction', async () => {
+          if (!profiles.salesman)
+            throw new Error('Salesman profile is not defined')
+          const response = await axios.get(
+            `/transfer/owner/${profiles.salesman.id}`,
+            {
+              headers: {
+                authorization: `Bearer ${salesmanTokens.accessToken}`
+              },
+              data: {
+                status: 'paid'
+              }
+            }
+          )
+
+          const { data: message } = response
+          expect(response.status).toBe(200)
+          expect(message).toHaveProperty('amount')
+          expect(message).toHaveProperty('status')
+          expect(message).toHaveProperty('id')
+          expect(message).toHaveProperty('userId')
+          expect(message).toHaveProperty('createdAt')
+          expect(message).toHaveProperty('updatedAt')
         })
     })
 })

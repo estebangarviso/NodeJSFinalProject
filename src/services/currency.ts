@@ -46,7 +46,7 @@ export default class CurrencyService {
   }
 
   async saveCurrency() {
-    if (!CURRENCY_SYMBOLS.includes(this.#symbol))
+    if (!CURRENCY_SYMBOLS.includes(`${this.#symbol}`))
       throw new BadRequest('Currency symbol not allowed')
     if (this.#rate === 0) throw new BadRequest('Currency rate cannot be 0')
     if (this.#rate < 0) throw new BadRequest('Currency rate cannot be negative')

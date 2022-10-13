@@ -19,6 +19,14 @@ export interface TSubmitUser {
   roleId: ROLES_IDS
 }
 
+export type TUser = {
+  id: IUser['id']
+  firstName: IUser['firstName']
+  lastName: IUser['lastName']
+  email: IUser['email']
+  roleId: Types.ObjectId
+}
+
 const UserSchema = new Schema<IUser>(
   {
     id: {

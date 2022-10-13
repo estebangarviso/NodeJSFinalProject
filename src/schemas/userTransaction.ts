@@ -8,3 +8,6 @@ export const storeUserTransactionSchema = Type.Object({
 export const userTransactionIDSchema = Type.Object({
   transferId: Type.String({ minLength: 21, maxLength: 21 })
 })
+export const userTransactionStatusSchema = Type.Object({
+  status: Type.String()
+})

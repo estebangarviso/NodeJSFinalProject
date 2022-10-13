@@ -62,8 +62,19 @@ const login = async () => {
     console.success(`Logged in`)
     accessToken = response.data.message.accessToken
 
-    const user = await new UserService({ email, password }).login()
-    userId = user.id
+    const profileResponse = await axios.get('/user/profile', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    })
+    const {
+      data: {
+        message: { id }
+      }
+    } = profileResponse
+
+    console.success(`Profile fetched`)
+    userId = id
   }
 }
 

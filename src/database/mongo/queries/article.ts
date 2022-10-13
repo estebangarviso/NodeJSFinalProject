@@ -28,6 +28,21 @@ export const getArticleByID: (
 }
 
 /**
+ * It gets all articles by its ID
+ * @returns found articles
+ */
+export const getAllArticlesByID: (
+  ids: string[]
+) => Promise<HydratedDocument<IArticle>[]> = async ids => {
+  const articles = await ArticleModel.find({
+    id: { $in: ids },
+    isDeleted: false
+  })
+
+  return articles
+}
+
+/**
  * It gets all articles
  * @returns found articles
  */

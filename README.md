@@ -6,13 +6,13 @@
 
 - [x] Save a new user as a customer
   - [x] Login with the customer
-- [ ] Save user cash as credits to the wallet (wallets are user transactions with a type of credit)
+- [x] Save user cash as credits to the wallet (wallets are user transactions with a type of credit)
 - [x] Save an user as a seller
   - [x] Login with the new seller
-- [ ] Only seller can save a new article with a price
+- [x] Only seller can save a new article with a price
 - [ ] Customer tries to buy the article
-  - [ ] The customer has not enough cash, the article is not bought and the customer has to add enough money to buy the article
-  - [ ] The customer has enough cash, the article is bought
+  - [ ] The customer has not enough cash, the article is not bought and the customer has to add enough money in order to buy it
+  - [ ] The customer has enough cash, the article is bought and its stock is reduced by purchased quantity
 - [ ] The seller has received the money from the customer (customer's and seller's wallets are updated after the purchase)
 - [ ] The article goes to the customer's account > purchase history (seller's article inventory is updated after the purchase)
 

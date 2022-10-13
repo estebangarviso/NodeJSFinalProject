@@ -1,1 +1,1 @@
-export const ORDER_STATUS = ['pending', 'completed', 'cancelled']
+export const ORDER_STATUS = ['completed', 'cancelled']
