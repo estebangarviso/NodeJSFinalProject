@@ -1,7 +1,7 @@
-import httpErrors from 'http-errors';
-import Ajv from 'ajv';
-import addFormats from 'ajv-formats';
-import { RequestHandler } from 'express';
+import httpErrors from 'http-errors'
+import Ajv from 'ajv'
+import addFormats from 'ajv-formats'
+import { RequestHandler } from 'express'
 
 const ajv = addFormats(
   new Ajv({
@@ -12,26 +12,29 @@ const ajv = addFormats(
   ['email']
 )
   .addKeyword('kind')
-  .addKeyword('modifier');
+  .addKeyword('modifier')
 
 /**
  * @param {Object} schema
  * @param {'body'|'params'} value
  */
-const validatorCompiler = (schema: object, value: 'body' | 'params'): RequestHandler => {
+const validatorCompiler = (
+  schema: object,
+  value: 'body' | 'params'
+): RequestHandler => {
   return (req, res, next) => {
-    const validate = ajv.compile(schema);
-    const ok = validate(req[value]);
+    const validate = ajv.compile(schema)
+    const ok = validate(req[value])
 
     if (!ok && validate.errors) {
-      const [error] = validate.errors;
-      const errorMessage = `${error.instancePath} ${error.message}`;
+      const [error] = validate.errors
+      const errorMessage = `${error.instancePath} ${error.message}`
 
-      return next(new httpErrors.UnprocessableEntity(errorMessage));
+      return next(new httpErrors.UnprocessableEntity(errorMessage))
     }
 
-    next();
-  };
-};
+    next()
+  }
+}
 
-export default validatorCompiler;
+export default validatorCompiler

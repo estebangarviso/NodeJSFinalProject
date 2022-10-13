@@ -1,14 +1,22 @@
-import { model, Schema } from 'mongoose';
+import { model, Schema, Document, Types } from 'mongoose'
+import { ROLES_IDS } from './../../../utils/role'
 
 export interface IUser {
-  id: string;
-  name: string;
-  lastName: string;
-  fullName: string;
-  email: string;
-  salt: string;
-  hash: string;
-  role: Schema.Types.ObjectId;
+  id: string
+  firstName: string
+  lastName: string
+  email: string
+  salt: string
+  hash: string
+  roleId: Types.ObjectId
+}
+
+export interface TSubmitUser {
+  firstName: IUser['firstName']
+  lastName: IUser['lastName']
+  email: IUser['email']
+  password: string
+  roleId: ROLES_IDS
 }
 
 const UserSchema = new Schema<IUser>(
@@ -18,7 +26,7 @@ const UserSchema = new Schema<IUser>(
       type: String,
       unique: true
     },
-    name: {
+    firstName: {
       required: true,
       type: String
     },
@@ -28,7 +36,8 @@ const UserSchema = new Schema<IUser>(
     },
     email: {
       required: true,
-      type: String
+      type: String,
+      unique: true
     },
     salt: {
       required: true,
@@ -38,7 +47,7 @@ const UserSchema = new Schema<IUser>(
       required: true,
       type: String
     },
-    role: {
+    roleId: {
       required: true,
       type: Schema.Types.ObjectId,
       ref: 'roles'
@@ -49,16 +58,17 @@ const UserSchema = new Schema<IUser>(
     versionKey: false,
     toObject: {
       transform: (_, ret) => {
-        delete ret._id;
+        delete ret._id
+        delete ret.salt
+        delete ret.hash
       }
     }
   }
-);
+)
 
 UserSchema.virtual('fullName').get(function (this: IUser): string {
-  return `${this.name} ${this.lastName}`;
-});
+  return `${this.firstName} ${this.lastName}`
+})
 
-const UserModel = model('users', UserSchema);
-
-export default UserModel;
+const UserModel = model('users', UserSchema)
+export default UserModel

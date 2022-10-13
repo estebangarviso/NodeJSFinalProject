@@ -1,57 +1,73 @@
-import UserModel from '../models/user';
-import { HydratedDocument } from 'mongoose';
-import { IUser } from '../models/user';
+import UserModel, { IUser } from '../models/user'
+import { HydratedDocument } from 'mongoose'
 
 /**
  * It saves a user to the database
+ *
  * @returns A promise that resolves to the saved user
  */
-export const saveUser: (user: IUser) => Promise<HydratedDocument<IUser>> = async (user) => {
-  const savedUser = new UserModel(user);
+export const saveUser: (
+  user: IUser
+) => Promise<HydratedDocument<IUser>> = async user => {
+  console.debug('Saving user to database', {
+    ...user
+  })
+  const savedUser = new UserModel(user)
 
-  await savedUser.save();
+  await savedUser.save()
 
-  return savedUser;
-};
+  return savedUser
+}
 
 /**
+ * It gets a user by its ID
  * @returns found user
  */
-export const getUserByID: (id: string) => Promise<HydratedDocument<IUser>> = async (id) => {
-  const users = await UserModel.find({ id });
+export const getUserByID: (
+  id: string
+) => Promise<HydratedDocument<IUser>> = async id => {
+  const users = await UserModel.find({ id })
 
-  return users[0];
-};
+  return users[0]
+}
 
 /**
+ * It gets all users
  * @returns found users
  */
-export const getAllUsers: () => Promise<HydratedDocument<IUser>[]> = async () => {
-  const users = await UserModel.find();
+export const getAllUsers: () => Promise<
+  HydratedDocument<IUser>[]
+> = async () => {
+  const users = await UserModel.find()
 
-  return users;
-};
+  return users
+}
 
 /**
+ * It removes a user by its ID
  * @returns found user
  */
-// export const removeUserByID = async (id) => {
-export const removeUserByID: (id: string) => Promise<HydratedDocument<IUser> | null> = async (id) => {
-  const user = await UserModel.findOneAndRemove({ id });
+export const removeUserByID: (
+  id: string
+) => Promise<HydratedDocument<IUser> | null> = async id => {
+  const user = await UserModel.findOneAndRemove({ id })
 
-  return user;
-};
+  return user
+}
 
 // TODO: update role if necessary
 /**
+ * It updates a user by its ID
  * @returns updated user
  */
-export const updateOneUser: (user: IUser) => Promise<HydratedDocument<IUser> | null> = async (user) => {
-  const { id, name, lastName, email, salt, hash } = user;
+export const updateOneUser: (
+  user: IUser
+) => Promise<HydratedDocument<IUser> | null> = async user => {
+  const { id, firstName, lastName, email, salt, hash } = user
   const userUpdated = await UserModel.findOneAndUpdate(
     { id },
     {
-      ...(name && { name }),
+      ...(firstName && { firstName }),
       ...(lastName && { lastName }),
       ...(email && { email }),
       ...(salt &&
@@ -61,18 +77,21 @@ export const updateOneUser: (user: IUser) => Promise<HydratedDocument<IUser> | n
         })
     },
     { new: true }
-  );
+  )
 
-  return userUpdated;
-};
+  return userUpdated
+}
 
 /**
  * It returns the first user in the database that matches the query
+ *
  * @param {Object} query - The query object that will be used to find the user.
  * @returns The first user in the database
  */
-export const getOneUser: (query?: object) => Promise<HydratedDocument<IUser> | null> = async (query = {}) => {
-  const users = await UserModel.find(query);
+export const getOneUser: (
+  query?: object
+) => Promise<HydratedDocument<IUser> | null> = async (query = {}) => {
+  const users = await UserModel.find(query)
 
-  return users[0];
-};
+  return users[0]
+}

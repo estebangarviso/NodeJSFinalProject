@@ -1,13 +1,16 @@
-export default {};
-import express from 'express';
-import { JwtPayload } from 'jsonwebtoken';
+/* eslint no-unused-vars: 0 */
+import express from 'express'
+import { JwtPayload } from 'jsonwebtoken'
+export default {}
 
 declare global {
   namespace Express {
     interface Request {
-      user?: JwtPayload['user'];
-      accessToken?: string;
-      refreshToken?: string;
+      currentUser?: {
+        id: string
+      }
+      accessToken?: string
+      refreshToken?: string
     }
   }
 }

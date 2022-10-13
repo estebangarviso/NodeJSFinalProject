@@ -1,55 +1,50 @@
-import config, { PORT } from '../config';
-import express, { Application } from 'express';
-import morgan from 'morgan';
-import { Server as HttpServer } from 'http';
-import dbConnection from '../database/mongo/connection';
-import applyRoutes from './router';
-
-interface Server {
-  app: Application;
-  connection: typeof dbConnection;
-}
+import { NODE_ENV, PORT } from '../config'
+import express, { Express } from 'express'
+import morgan from 'morgan'
+import { IncomingMessage, Server as HttpServer, ServerResponse } from 'http'
+import dbConnection from '../database/mongo/connection'
+import applyRoutes from './router'
 
 class Server {
-  #app;
-  #connection;
-  #server?: HttpServer;
+  #app: Express
+  #connection: ReturnType<typeof dbConnection>
+  #server?: HttpServer<typeof IncomingMessage, typeof ServerResponse>
 
   constructor() {
-    this.#app = express();
-    this.#connection = dbConnection();
-    this.#config();
+    this.#app = express()
+    this.#connection = dbConnection()
+    this.#config()
   }
 
   #config() {
-    this.#app.use(express.json());
-    this.#app.use(morgan('dev'));
-    this.#app.use(express.urlencoded({ extended: false }));
-    applyRoutes(this.#app);
+    this.#app.use(express.json())
+    this.#app.use(morgan(NODE_ENV === 'development' ? 'dev' : 'combined'))
+    this.#app.use(express.urlencoded({ extended: false }))
+    applyRoutes(this.#app)
   }
 
   async start() {
     try {
-      await config.verify;
-      await this.#connection.connect();
+      await this.#connection.connect()
       this.#server = this.#app.listen(PORT, () => {
-        console.log(`Server running at port ${PORT}.`);
-      });
+        console.success(`Server running at port ${PORT}.`)
+      })
     } catch (error) {
-      console.error(error);
+      console.error(error)
     }
   }
 
   async stop() {
     try {
-      await this.#connection.disconnect();
-      this.#server?.close();
+      console.warn('Server is shutting down...')
+      await this.#connection.disconnect()
+      this.#server?.close()
     } catch (error) {
-      console.error(error);
+      console.error(error)
     }
   }
 }
 
-const server = new Server();
+const server = new Server()
 
-export default server;
+export default server
