@@ -30,6 +30,40 @@ describe('E2E tests: Use cases for the App', () => {
     password,
     roleId: 1
   }
+  const newArticles = [
+    {
+      sku: `${faker.commerce.product().toLowerCase()}-${faker.random.numeric(
+        3
+      )}`,
+      title: faker.commerce.productName(),
+      shortDescription: faker.commerce.productDescription(),
+      unity: 'ea',
+      qtyStock: faker.random.numeric(2),
+      unitPrice: faker.commerce.price(1000, 10000)
+    },
+    {
+      sku: `${faker.commerce.product().toLowerCase()}-${faker.random.numeric(
+        3
+      )}`,
+      title: faker.commerce.productName(),
+      shortDescription: faker.commerce.productDescription(),
+      unity: 'ea',
+      qtyStock: faker.random.numeric(2),
+      unitPrice: faker.commerce.price(1000, 10000)
+    },
+    {
+      sku: `${faker.commerce.product().toLowerCase()}-${faker.random.numeric(
+        3
+      )}`,
+      title: faker.commerce.productName(),
+      shortDescription: faker.commerce.productDescription(),
+      unity: 'ea',
+      qtyStock: faker.random.numeric(2),
+      unitPrice: faker.commerce.price(1000, 10000)
+    }
+  ]
+  const newAmountToDeposit = faker.commerce.price(100000, 1000000)
+
   const customerTokens = {
     accessToken: '',
     refreshToken: ''
@@ -112,7 +146,7 @@ describe('E2E tests: Use cases for the App', () => {
           expect(message).toHaveProperty('updatedAt')
           profiles.salesman = message
         }),
-        it('the customer should be able to transfer cash to himself and wait until salesman approved transaction', async () => {
+        it('the customer should be able to transfer cash to himself', async () => {
           if (!profiles.customer)
             throw new Error('Customer profile is not defined')
           const {
@@ -126,7 +160,7 @@ describe('E2E tests: Use cases for the App', () => {
           const {
             data: { message: credit }
           } = await axios.post(
-            `/user/${user.id}/credit`,
+            `/transfer/user/${user.id}`,
             { amount },
             {
               headers: {
@@ -135,7 +169,7 @@ describe('E2E tests: Use cases for the App', () => {
             }
           )
           expect(credit.amount).toBe(amount)
-          expect(credit.status).toBe('pending')
+          expect(credit.status).toBe('paid')
         }),
         it('the salesman should be able to approve transaction', async () => {
           if (!profiles.salesman)

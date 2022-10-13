@@ -1,6 +1,8 @@
 import OrderModel, { IOrder } from '../models/order'
 import httpErrors from 'http-errors'
 import { UpdateQuery } from 'mongoose'
+import ArticleModel from '../models/article'
+import { getAllArticlesByID } from './article'
 
 /**
  * Get all orders
@@ -53,7 +55,45 @@ export const getOneOrderByUserId = async (userId: string): Promise<IOrder> => {
 export const saveOrder = async (order: IOrder): Promise<IOrder> => {
   const newOrder = new OrderModel(order)
 
-  return await newOrder.save()
+  const savedOrder = await newOrder.save()
+  if (!savedOrder) throw new httpErrors.InternalServerError('Order not saved')
+
+  // Update order article stock
+  try {
+    const populatedOrder = await savedOrder.populate<IOrder>(
+      'details.articleId'
+    )
+
+    const articleIds: string[] = Object.values(populatedOrder.details).map(
+      /* eslint-disable-next-line */
+      (detail: any) => detail.articleId.id
+    ) as string[]
+
+    const articles = await getAllArticlesByID(articleIds)
+    if (articles.length === 0)
+      throw new httpErrors.InternalServerError('Articles not found')
+
+    articles.map(async article => {
+      const detail = populatedOrder.details.find(
+        det => det.articleId.id === article.id
+      )
+      if (!detail) throw new httpErrors.InternalServerError('Detail not found')
+
+      const updatedArticle = await ArticleModel.findByIdAndUpdate(
+        article._id,
+        {
+          $inc: { qtyStock: -detail.quantity }
+        },
+        { new: true }
+      )
+      if (!updatedArticle)
+        throw new httpErrors.InternalServerError('Article not updated')
+    })
+  } catch (error) {
+    throw new httpErrors.InternalServerError('Order not saved')
+  }
+
+  return savedOrder
 }
 
 /**

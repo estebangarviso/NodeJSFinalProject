@@ -43,6 +43,7 @@ export default class UserTransactionService {
     let userId
     let givenTo
     let entry
+    let status = 'pending'
     if (this.#userId === this.#givenTo) {
       const userService = new UserService({ userId: this.#userId })
       const foundUser = await userService.verifyUserExists()
@@ -50,6 +51,7 @@ export default class UserTransactionService {
       userId = foundUser._id
       givenTo = foundUser._id
       entry = 'debit'
+      status = 'paid'
     } else {
       const userService = new UserService({ userId: this.#userId })
       const foundUser = await userService.verifyUserExists()
@@ -66,7 +68,6 @@ export default class UserTransactionService {
 
     const defaultCurrency = await getDefaultCurrency()
     const currencyId = defaultCurrency._id
-    const status = 'pending'
 
     const newTransaction = await saveUserTransaction({
       id: nanoid(),
@@ -87,6 +88,9 @@ export default class UserTransactionService {
     const foundTransaction = await getOneUserTransaction(this.#transferId)
     if (!foundTransaction)
       throw new httpErrors.NotFound('User transaction not found')
+    // Check if transaction is already paid
+    if (foundTransaction.status === 'paid')
+      throw new httpErrors.BadRequest('The transaction is already paid')
 
     foundTransaction.status = 'paid'
     const savedTransaction = await foundTransaction.save()
