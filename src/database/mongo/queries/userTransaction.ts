@@ -53,15 +53,19 @@ export const getAllUserTransactions: (
 }
 
 /**
+ * Sum all user transactions by userId where entry is equal to debit and subtract all user transactions where entry is equal to credit
  * @returns User transactions balance
  */
 export const getUserTransactionsBalance: (
-  userId: string
+  userId: Types.ObjectId
 ) => Promise<number> = async userId => {
-  const userTransactions = await UserTransactionModel.find({ userId })
-  const balance = userTransactions.reduce((acc, userTransaction) => {
-    if (userTransaction.status === 'paid') return acc + userTransaction.amount
-
+  const foundUserTransactions = await UserTransactionModel.find({
+    userId
+  })
+  if (!foundUserTransactions) return 0
+  const balance = foundUserTransactions.reduce((acc, curr) => {
+    if (curr.entry === 'debit') return acc + curr.amount
+    if (curr.entry === 'credit') return acc - curr.amount
     return acc
   }, 0)
 
@@ -73,6 +77,18 @@ export const getUserTransactionsBalance: (
  * @returns User transactions
  */
 export const getUserTransactions: (
+  query: object
+) => Promise<HydratedDocument<IUserTransactions>[]> = async query => {
+  const userTransactions = await UserTransactionModel.find(query)
+
+  return userTransactions
+}
+
+/**
+ * @param query Query to be used to find one or more user transactions
+ * @returns User transaction(s)
+ */
+export const getOneOrMoreUserTransactions: (
   query: object
 ) => Promise<HydratedDocument<IUserTransactions>[]> = async query => {
   const userTransactions = await UserTransactionModel.find(query)

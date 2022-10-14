@@ -11,11 +11,14 @@
     "start": "node index.js",
     "build": "tsc",
     "dev": "nodemon",
-    "test": "jest --runInBand --detectOpenHandles",
-    "test:cov": "jest --coverage --runInBand --detectOpenHandles",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:verbose": "jest --verbose",
+    "test:coverage": "jest --coverage",
+    "test:debug": "yarn test --runInBand --detectOpenHandles -- --silent=false",
     "test:help": "jest --help",
     "lint": "eslint . --ext .ts",
-    "lint:fix": "npm run lint -- --fix"
+    "lint:fix": "yarn run lint -- --fix"
   },
   "dependencies": {
     "@sinclair/typebox": "^0.24.44",

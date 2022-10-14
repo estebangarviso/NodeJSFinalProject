@@ -24,6 +24,7 @@ const validatorCompiler = (
 ): RequestHandler => {
   return (req, res, next) => {
     const validate = ajv.compile(schema)
+
     const ok = validate(req[value])
 
     if (!ok && validate.errors) {

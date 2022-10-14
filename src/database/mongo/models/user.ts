@@ -1,4 +1,5 @@
 import { model, Schema, Types } from 'mongoose'
+import { NODE_ENV } from '../../../config'
 import { ROLES_IDS } from './../../../utils/role'
 
 export interface IUser {
@@ -9,6 +10,7 @@ export interface IUser {
   salt: string
   hash: string
   roleId: Types.ObjectId
+  secureToken: string
 }
 
 export interface TSubmitUser {
@@ -59,6 +61,11 @@ const UserSchema = new Schema<IUser>(
       required: true,
       type: Schema.Types.ObjectId,
       ref: 'roles'
+    },
+    secureToken: {
+      unique: true,
+      required: false,
+      type: String
     }
   },
   {
@@ -67,7 +74,6 @@ const UserSchema = new Schema<IUser>(
     toObject: {
       transform: (_, ret) => {
         /* eslint-disable */
-        delete ret._id
         delete ret.salt
         delete ret.hash
       }

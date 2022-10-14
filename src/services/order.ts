@@ -53,14 +53,10 @@ export default class OrderService {
       throw new httpErrors.BadRequest('Missing required field: userId')
     if (!this.#receiverId)
       throw new httpErrors.BadRequest('Missing required field: receiverId')
-    if (!this.#details)
+    if (this.#details.length === 0)
       throw new httpErrors.BadRequest('Missing required field: details')
-    if (!this.#status)
-      throw new httpErrors.BadRequest('Missing required field: status')
-    if (!ORDER_STATUS.includes(`${this.#status}`))
-      throw new httpErrors.BadRequest('Invalid status')
-    if (this.#details?.length)
-      throw new httpErrors.BadRequest('Missing required field: details')
+
+    if (!this.#status) this.#status = ORDER_STATUS.COMPLETED
 
     const user = await new UserService({
       userId: this.#userId
@@ -69,10 +65,11 @@ export default class OrderService {
       userId: this.#receiverId
     }).verifyUserExists()
     /* eslint-disable */
-    const currentBalance = await getUserTransactionsBalance(user.id)
+    const currentBalance = await getUserTransactionsBalance(user._id)
     const defaultCurrency = await getDefaultCurrency()
     const currencyId = defaultCurrency._id
     const currencyRate = defaultCurrency.rate
+
     const articleIds = this.#details.map(detail => detail.articleId)
     const articles = await getAllArticlesByID(articleIds)
     if (articles.length === 0)
@@ -93,22 +90,36 @@ export default class OrderService {
       return acc + detail.unitPrice * detail.quantity
     }, 0)
     const total = sumSubTotal * currencyRate
+    const formattedTotal = Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: defaultCurrency.symbol,
+      minimumFractionDigits: defaultCurrency.decimals
+    }).format(total)
+    const formattedBalance = Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: defaultCurrency.symbol,
+      minimumFractionDigits: defaultCurrency.decimals
+    }).format(currentBalance)
 
     if (currentBalance < total)
-      throw new httpErrors.BadRequest('Insufficient balance')
+      throw new httpErrors.BadRequest(
+        `You don't have enough money to make this purchase. Your current balance is ${formattedBalance} and the total of this purchase is ${formattedTotal}`
+      )
+
     const userTransactionService = new UserTransactionService({
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       userId: user.id,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      givenTo: receiver.id,
+      receiverId: receiver.id,
       amount: total
     })
     const userTransaction = await userTransactionService.saveUserTransaction()
+    if (!userTransaction)
+      throw new httpErrors.InternalServerError('Error saving userTransaction')
 
     const order = {
       trackingNumber: nanoid(),
       userTransactionId: userTransaction._id,
       userId: user._id,
+      receiverId: receiver._id,
       currencyId,
       currencyRate,
       details,

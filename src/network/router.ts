@@ -4,6 +4,7 @@ import { Application, Response, Request, NextFunction } from 'express'
 import articleRouter from './routes/article'
 import userRouter from './routes/user'
 import userTransactionRouter from './routes/userTransaction'
+import orderRouter from './routes/order'
 import currencyRouter from './routes/currency'
 import roleRouter from './routes/role'
 import response from './routes/response'
@@ -12,6 +13,7 @@ const routers = [
   articleRouter,
   userRouter,
   userTransactionRouter,
+  orderRouter,
   currencyRouter,
   roleRouter
 ]

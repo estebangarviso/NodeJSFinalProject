@@ -7,7 +7,7 @@ import {
 export interface IUserTransactions {
   id: string
   userId: Types.ObjectId
-  givenTo: Types.ObjectId
+  receiverId: Types.ObjectId
   amount: number
   currencyId: Types.ObjectId
   status: string
@@ -29,7 +29,7 @@ const UserTransactionSchema = new Schema<IUserTransactions>(
       type: Schema.Types.ObjectId,
       ref: 'users'
     },
-    givenTo: {
+    receiverId: {
       required: true,
       type: Schema.Types.ObjectId,
       ref: 'users'
@@ -55,12 +55,7 @@ const UserTransactionSchema = new Schema<IUserTransactions>(
   },
   {
     timestamps: true,
-    versionKey: false,
-    toObject: {
-      transform: (_, ret: Document<IUserTransactions>) => {
-        delete ret._id
-      }
-    }
+    versionKey: false
   }
 )
 

@@ -6,6 +6,7 @@ export interface IOrder {
   userTransactionId: Types.ObjectId
   userId: Types.ObjectId
   currencyId: Types.ObjectId
+  receiverId: Types.ObjectId
   currencyRate: number
   total: number
   details: {
@@ -19,6 +20,7 @@ export interface IOrder {
 export type TSubmitOrder = {
   userTransactionId: IOrder['userTransactionId']
   userId: IOrder['userId']
+  receiverId: IOrder['receiverId']
   currencyId: IOrder['currencyId']
   total: IOrder['total']
   details: IOrder['details']
@@ -28,6 +30,7 @@ export type TBeforeSaveOrder = {
   trackingNumber: IOrder['trackingNumber']
   userTransactionId: string
   userId: string
+  receiverId: string
   currencyId: string
   total: IOrder['total']
   details: {
@@ -52,6 +55,11 @@ const OrderSchema = new Schema<IOrder>(
       ref: 'userTransactions'
     },
     userId: {
+      required: true,
+      type: Schema.Types.ObjectId,
+      ref: 'users'
+    },
+    receiverId: {
       required: true,
       type: Schema.Types.ObjectId,
       ref: 'users'
@@ -89,7 +97,7 @@ const OrderSchema = new Schema<IOrder>(
     status: {
       required: true,
       type: String,
-      enum: ORDER_STATUS
+      enum: [ORDER_STATUS.COMPLETED, ORDER_STATUS.CANCELLED]
     }
   },
   {

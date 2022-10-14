@@ -93,7 +93,8 @@ export default class UserService {
       email: this.#email,
       salt,
       hash,
-      roleId: role._id
+      roleId: role._id,
+      secureToken: nanoid(33)
     })
 
     return savedUser

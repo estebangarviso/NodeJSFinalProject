@@ -12,6 +12,7 @@ import response from './response'
 import UserService from '../../services/user'
 import { HydratedDocument } from 'mongoose'
 import { IUser } from '../../database/mongo/models/user'
+import UserTransactionService from '../../services/userTransaction'
 
 const UserRouter = Router()
 
@@ -51,6 +52,32 @@ UserRouter.route('/user/profile').get(
     }
   }
 )
+
+UserRouter.route('/user/balance').get(
+  auth.verifyUser(),
+  async (req, res, next) => {
+    try {
+      const { currentUser } = req
+      if (!currentUser) throw new httpErrors.Unauthorized('Unauthorized')
+
+      const userTransactionService = new UserTransactionService({
+        userId: currentUser.id
+      })
+
+      const balance = await userTransactionService.getUserTransactionsBalance()
+
+      response({
+        error: false,
+        message: balance.toString(),
+        res,
+        status: 200
+      })
+    } catch (error) {
+      next(error)
+    }
+  }
+)
+
 UserRouter.route('/user/signup').post(
   validatorCompiler(storeUserSchema, 'body'),
   async (req, res, next) => {

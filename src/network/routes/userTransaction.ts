@@ -5,12 +5,12 @@ import auth from './utils/auth'
 import {
   storeUserTransactionSchema,
   userTransactionIDSchema,
-  userTransactionStatusSchema
+  userTransactionSecureTokenSchema,
+  realUserTransactionIDSchema
 } from '../../schemas/userTransaction'
 import validatorCompiler from './utils/validatorCompiler'
 import response from './response'
 import { userIDSchema } from '../../schemas/user'
-import { TRANSACTION_STATUS } from '../../utils/userTransaction'
 
 const TransactionRouter = Router()
 
@@ -53,7 +53,7 @@ TransactionRouter.route('/transfer/user/:id')
         /* eslint-disable */
         const {
           currentUser,
-          body: { givenTo, amount },
+          body: { receiverId, amount },
           params: { id: userId }
         } = req
         if (!currentUser)
@@ -63,7 +63,7 @@ TransactionRouter.route('/transfer/user/:id')
 
         const userTransactionService = new UserTransactionService({
           userId,
-          givenTo,
+          receiverId,
           amount
         })
 
@@ -98,23 +98,16 @@ TransactionRouter.route('/transfer/:transferId/user/:id').get(
         await userTransactionService.getUserTransactionByID()
 
       await userTransaction.populate('userId')
-      await userTransaction.populate('givenTo')
-      console.debug('Debugging', {
-        userTransaction,
-        currentUser,
-        userTransactionIdAsString: String(userTransaction.userId.id),
-        currentUserIdAsString: currentUser.id,
-        userId
-      })
+      await userTransaction.populate('receiverId')
       if (
         currentUser.id !== userId ||
         currentUser.id !== String(userTransaction.userId.id) ||
-        currentUser.id !== String(userTransaction.givenTo.id)
+        currentUser.id !== String(userTransaction.receiverId.id)
       )
         throw new httpErrors.Unauthorized(NOT_ALLOWED_TO_BE_HERE)
 
       userTransaction.depopulate('userId')
-      userTransaction.depopulate('givenTo')
+      userTransaction.depopulate('receiverId')
 
       response({
         error: false,
@@ -128,79 +121,68 @@ TransactionRouter.route('/transfer/:transferId/user/:id').get(
   }
 )
 
-TransactionRouter.route('/transfer/owner/:id')
-  .get(
-    validatorCompiler(userIDSchema, 'params'),
-    auth.verifyUser(),
-    async (req, res, next) => {
-      try {
-        const {
-          currentUser,
-          params: { id: givenTo }
-        } = req
-        if (!currentUser)
-          throw new httpErrors.Unauthorized(NOT_ALLOWED_TO_BE_HERE)
-        if (currentUser.id !== givenTo)
-          throw new httpErrors.Unauthorized(NOT_ALLOWED_TO_BE_HERE)
+TransactionRouter.route('/transfer/owner/:id').get(
+  validatorCompiler(userIDSchema, 'params'),
+  auth.verifyUser(),
+  async (req, res, next) => {
+    try {
+      const {
+        currentUser,
+        params: { id: receiverId }
+      } = req
+      if (!currentUser)
+        throw new httpErrors.Unauthorized(NOT_ALLOWED_TO_BE_HERE)
+      if (currentUser.id !== receiverId)
+        throw new httpErrors.Unauthorized(NOT_ALLOWED_TO_BE_HERE)
 
-        const userTransactionService = new UserTransactionService({ givenTo })
-        const userTransactions =
-          await userTransactionService.getAllUserTransactionsByGivenTo()
+      const userTransactionService = new UserTransactionService({ receiverId })
+      const userTransactions =
+        await userTransactionService.getAllUserTransactionsByReceiverId()
 
-        response({
-          error: false,
-          message: userTransactions,
-          res,
-          status: 200
-        })
-      } catch (error) {
-        next(error)
-      }
+      response({
+        error: false,
+        message: userTransactions,
+        res,
+        status: 200
+      })
+    } catch (error) {
+      next(error)
     }
-  )
-  .get(
-    validatorCompiler(userTransactionIDSchema, 'body'),
-    validatorCompiler(userTransactionStatusSchema, 'body'),
-    auth.verifyUser(),
-    async (req, res, next) => {
-      try {
-        const {
-          currentUser,
-          params: { id: givenTo },
-          body: { transferId, status }
-        } = req
-        if (!currentUser)
-          throw new httpErrors.Unauthorized(NOT_ALLOWED_TO_BE_HERE)
-        if (currentUser.id !== givenTo)
-          throw new httpErrors.Unauthorized(NOT_ALLOWED_TO_BE_HERE)
+  }
+)
 
-        const userTransactionService = new UserTransactionService({
-          transferId
-        })
-        const userTransaction =
-          await userTransactionService.getUserTransactionByID()
+TransactionRouter.route('/transfer/verify/:secureToken').patch(
+  validatorCompiler(userTransactionSecureTokenSchema, 'params'),
+  validatorCompiler(realUserTransactionIDSchema, 'body'),
+  auth.verifyByRole('salesman'),
+  async (req, res, next) => {
+    try {
+      const {
+        currentUser,
+        body: { _id },
+        params: { secureToken }
+      } = req
+      if (!currentUser)
+        throw new httpErrors.Unauthorized(NOT_ALLOWED_TO_BE_HERE)
 
-        await userTransaction.populate('givenTo')
+      const userTransactionService = new UserTransactionService({
+        secureToken,
+        _id,
+        receiverId: currentUser.id
+      })
+      const verifiedTransaction =
+        await userTransactionService.verifyUserTransaction()
 
-        if (currentUser.id !== String(userTransaction.givenTo.id))
-          throw new httpErrors.Unauthorized(NOT_ALLOWED_TO_BE_HERE)
-
-        userTransaction.depopulate('givenTo')
-
-        if (TRANSACTION_STATUS.includes(status)) {
-          userTransaction.status = status
-
-          response({
-            error: false,
-            message: userTransaction,
-            res,
-            status: 200
-          })
-        } else throw new httpErrors.BadRequest('Invalid status')
-      } catch (error) {
-        next(error)
-      }
+      response({
+        error: false,
+        message: verifiedTransaction,
+        res,
+        status: 200
+      })
+    } catch (error) {
+      next(error)
     }
-  )
+  }
+)
 
 export default TransactionRouter

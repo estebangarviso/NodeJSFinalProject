@@ -102,6 +102,8 @@ const verifyUser = (): RequestHandler => {
       return next(new httpErrors.Unauthorized(NOT_ALLOWED_TO_BE_HERE))
     } catch (error: any) {
       /* eslint-disable */
+      console.log('verifyUser error', error)
+
       return handleError(error, next)
     }
   }
@@ -128,10 +130,14 @@ const verifyByRole = (roleName: ROLE_NAMES): RequestHandler => {
         const role = await RoleService.getRoleByName(roleName)
         if (!role) throw new httpErrors.Unauthorized(NOT_ALLOWED_TO_BE_HERE)
         const isRoleAllowed = String(role._id) === String(userRoleId)
-        req.currentUser = {
-          id: user.id
+
+        if (isRoleAllowed) {
+          req.currentUser = {
+            id: user.id
+          }
+
+          return next()
         }
-        if (isRoleAllowed) return next()
       }
 
       return next(new httpErrors.Unauthorized(NOT_ALLOWED_TO_BE_HERE))

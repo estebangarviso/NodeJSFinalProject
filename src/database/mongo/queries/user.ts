@@ -9,9 +9,6 @@ import { HydratedDocument } from 'mongoose'
 export const saveUser: (
   user: IUser
 ) => Promise<HydratedDocument<IUser>> = async user => {
-  console.debug('Saving user to database', {
-    ...user
-  })
   const savedUser = new UserModel(user)
 
   await savedUser.save()

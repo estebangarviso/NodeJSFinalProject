@@ -5,64 +5,73 @@ import {
   saveUserTransaction,
   getOneUserTransaction,
   getAllUserTransactions,
-  getUserTransactions
+  getUserTransactions,
+  getOneOrMoreUserTransactions,
+  getUserTransactionsBalance
 } from '../database/mongo/queries/userTransaction'
 import { getDefaultCurrency } from '../database/mongo/queries/currency'
 
 export default class UserTransactionService {
-  #transferId: string
-  #userId: string
-  #givenTo: string
-  #amount: number
+  #_id
+  #transferId
+  #userId
+  #receiverId
+  #amount
+  #secureToken
 
   constructor(args?: {
+    _id?: string
     transferId?: string
     userId?: string
-    givenTo?: string
+    receiverId?: string
     amount?: number
+    secureToken?: string
   }) {
     const {
       transferId = '',
       userId = '',
-      givenTo = '',
-      amount = 0
+      receiverId = '',
+      amount = 0,
+      secureToken = ''
     } = args || {}
     if (amount < 0) throw new httpErrors.BadRequest('Amount cannot be negative')
+    this.#_id = args?._id
     this.#transferId = transferId
     this.#userId = userId
     this.#amount = amount
-    this.#givenTo = givenTo
+    this.#receiverId = receiverId
+    this.#secureToken = secureToken
   }
 
   async saveUserTransaction() {
     if (!this.#userId)
       throw new httpErrors.BadRequest('Missing required field: userId')
-    if (!this.#givenTo)
-      throw new httpErrors.BadRequest('Missing required field: givenTo')
+    if (!this.#receiverId)
+      throw new httpErrors.BadRequest('Missing required field: receiverId')
 
     let userId
-    let givenTo
+    let receiverId
     let entry
     let status = 'pending'
-    if (this.#userId === this.#givenTo) {
+    if (this.#userId === this.#receiverId) {
       const userService = new UserService({ userId: this.#userId })
       const foundUser = await userService.verifyUserExists()
       if (!foundUser) throw new httpErrors.NotFound('User not found')
       userId = foundUser._id
-      givenTo = foundUser._id
+      receiverId = foundUser._id
       entry = 'debit'
       status = 'paid'
     } else {
       const userService = new UserService({ userId: this.#userId })
       const foundUser = await userService.verifyUserExists()
-      const givenToService = new UserService({ userId: this.#givenTo })
-      const foundGivenTo = await givenToService.verifyUserExists()
+      const receiverIdService = new UserService({ userId: this.#receiverId })
+      const foundReceiverId = await receiverIdService.verifyUserExists()
       if (!foundUser) throw new httpErrors.NotFound('User not found')
-      if (!foundGivenTo)
+      if (!foundReceiverId)
         throw new httpErrors.NotFound('Given to user not found')
 
       userId = foundUser._id
-      givenTo = foundGivenTo._id
+      receiverId = foundReceiverId._id
       entry = 'credit'
     }
 
@@ -72,7 +81,7 @@ export default class UserTransactionService {
     const newTransaction = await saveUserTransaction({
       id: nanoid(),
       userId,
-      givenTo,
+      receiverId,
       amount: this.#amount,
       currencyId,
       status,
@@ -82,12 +91,22 @@ export default class UserTransactionService {
     return newTransaction.toObject()
   }
 
-  async paidUserTransaction() {
-    if (!this.#transferId)
-      throw new httpErrors.BadRequest('Missing required field: id')
-    const foundTransaction = await getOneUserTransaction(this.#transferId)
+  async verifyUserTransaction() {
+    if (!this.#secureToken)
+      throw new httpErrors.BadRequest('Missing required field: secureToken')
+    if (!this.#_id)
+      throw new httpErrors.BadRequest('Missing required field: _id')
+    if (!this.#receiverId)
+      throw new httpErrors.BadRequest('Missing required field: receiverId')
+
+    const foundTransactions = await getOneOrMoreUserTransactions({
+      secureToken: this.#secureToken,
+      _id: this.#_id
+    })
+    const foundTransaction = foundTransactions[0]
     if (!foundTransaction)
       throw new httpErrors.NotFound('User transaction not found')
+
     // Check if transaction is already paid
     if (foundTransaction.status === 'paid')
       throw new httpErrors.BadRequest('The transaction is already paid')
@@ -123,18 +142,30 @@ export default class UserTransactionService {
     return transactions
   }
 
-  async getAllUserTransactionsByGivenTo() {
-    if (!this.#givenTo)
-      throw new httpErrors.BadRequest('Missing required field: givenTo')
-    const userService = new UserService({ userId: this.#givenTo })
+  async getAllUserTransactionsByReceiverId() {
+    if (!this.#receiverId)
+      throw new httpErrors.BadRequest('Missing required field: receiverId')
+    const userService = new UserService({ userId: this.#receiverId })
     const foundUser = await userService.verifyUserExists()
     if (!foundUser) throw new httpErrors.NotFound('User not found')
-    const givenTo = foundUser._id
+    const receiverId = foundUser._id
 
-    const transactions = await getUserTransactions({ givenTo })
+    const transactions = await getUserTransactions({ receiverId })
     if (!transactions)
       throw new httpErrors.NotFound('User transactions not found')
 
     return transactions
+  }
+
+  async getUserTransactionsBalance() {
+    if (!this.#userId)
+      throw new httpErrors.BadRequest('Missing required field: userId')
+    const userService = new UserService({ userId: this.#userId })
+    const foundUser = await userService.verifyUserExists()
+    if (!foundUser) throw new httpErrors.NotFound('User not found')
+    const userId = foundUser._id
+    const balance = await getUserTransactionsBalance(userId)
+    if (!balance) throw new httpErrors.NotFound('User transactions not found')
+    return balance
   }
 }

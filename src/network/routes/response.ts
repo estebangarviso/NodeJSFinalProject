@@ -1,4 +1,5 @@
 import { Response } from 'express'
+import { NODE_ENV } from '../../config'
 type RouterResponseHandler = (args: {
   error: boolean
   message: object | string | Response
@@ -12,6 +13,8 @@ const response: RouterResponseHandler = ({
   status = 500,
   res
 }) => {
+  console.debug('DEBUG: response', { error, message, status })
+
   res.status(status).send({ error, message })
 }
 

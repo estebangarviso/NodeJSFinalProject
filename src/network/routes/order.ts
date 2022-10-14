@@ -10,18 +10,18 @@ import {
 import validatorCompiler from './utils/validatorCompiler'
 import response from './response'
 
-const TransactionRouter = Router()
+const OrderRouter = Router()
 
 const NOT_ALLOWED_TO_BE_HERE = 'You are not allowed here!'
 
-TransactionRouter.route('/order').post(
+OrderRouter.route('/order').post(
   validatorCompiler(storeOrderSchema, 'body'),
-  auth.verifyIsCurrentUser,
+  auth.verifyUser(),
   async (req, res, next) => {
     /* eslint-disable */
     const {
       currentUser,
-      body: { details, total, status }
+      body: { details, receiverId }
     } = req
     if (!currentUser) throw new httpErrors.Unauthorized(NOT_ALLOWED_TO_BE_HERE)
     const { id: userId } = currentUser
@@ -29,9 +29,8 @@ TransactionRouter.route('/order').post(
     try {
       const orderService = new OrderService({
         userId,
-        details,
-        total,
-        status
+        receiverId,
+        details
       })
 
       response({
@@ -46,7 +45,7 @@ TransactionRouter.route('/order').post(
   }
 )
 
-TransactionRouter.route('/order/:trackingNumber')
+OrderRouter.route('/order/:trackingNumber')
   .get(
     validatorCompiler(orderTrackingNumberSchema, 'params'),
     auth.verifyIsCurrentUser,
@@ -100,3 +99,5 @@ TransactionRouter.route('/order/:trackingNumber')
       }
     }
   )
+
+export default OrderRouter
