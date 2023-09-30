@@ -4,6 +4,8 @@
 
 # global variables
 ARG APP_ENV
+ARG AWS_ACCESS_KEY_ID
+ARG AWS_SECRET_ACCESS_KEY
 ARG NODE=node:18.17.1-alpine
 ARG NODE_ENV='production'
 ARG PORT=8080
@@ -23,6 +25,8 @@ FROM ${NODE} AS base
 ARG APP_DIR
 ARG APP_ENV
 ARG PNPM_VER
+ARG AWS_ACCESS_KEY_ID
+ARG AWS_SECRET_ACCESS_KEY
 
 # Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
 RUN apk add --no-cache libc6-compat
@@ -31,6 +35,7 @@ WORKDIR ${APP_DIR}
 # Install dependencies
 RUN echo "Copying base files..."
 COPY package.json pnpm-lock.yaml* ./
+COPY scripts ./scripts
 
 RUN \
   if [ -f pnpm-lock.yaml ]; then yarn global add pnpm && pnpm i --frozen-lockfile --ignore-scripts; \
@@ -38,13 +43,11 @@ RUN \
   fi
 
 # # Generate env file based on the APP_ENV
-# RUN pnpm run secrets:decrypt && \
-#   pnpm run env:${APP_ENV}
+ENV AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+ENV AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+RUN pnpm run env:${APP_ENV}
 
-# RUN if [ ! -f "${APP_DIR}.env" ]; then echo "Env file not found." && exit 1; fi && \
-#   rm -rf \
-#   'secrets.json' \
-#   'secrets.enc'
+RUN if [ ! -f "${APP_DIR}.env" ]; then echo "Env file not found." && exit 1; fi
 
 # Injects the env variables from github actions
 # https://docs.github.com/en/actions/reference/environment-variables
@@ -101,7 +104,7 @@ RUN adduser --system --uid 1001 expressjs
 COPY --from=builder ${APP_DIR}${PUBLIC_DIR} ./${PUBLIC_DIR}
 # Automatically leverage output traces to reduce image size
 # https://expressjs.org/docs/advanced-features/output-file-tracing
-COPY --from=builder --chown=expressjs:nodejs ${APP_DIR}${BUILD_DIR} ./
+COPY --from=builder --chown=expressjs:nodejs ${APP_DIR}${BUILD_DIR} ./dist
 
 # alpine security updates
 RUN apk --no-cache -U upgrade
@@ -116,4 +119,4 @@ ENV PORT=${PORT}
 ENV HOSTNAME=${HOSTNAME}
 
 # exec command
-CMD ["node", ${BUILD_DIR}/index.js]
+CMD ["node", "dist/index.js"]
