@@ -2,7 +2,7 @@
 
 <h1 align="center">Ecommerce backend with Node.js</h1>
 
-## e2e Testing steps
+## Test Plans - e2e
 
 - [x] Save a new user as a customer
   - [x] Login with the customer
@@ -18,50 +18,50 @@
 
 ## Requirements
 
-- Node.js v16 (use [nvm](https://github.com/nvm-sh/nvm) to manage multiple Node.js versions.)
-- yarn v1.22 (minimum)
+- Node.js v18 (use [nvm](https://github.com/nvm-sh/nvm) to manage multiple Node.js versions.)
+- pnpm v8 (minimum)
 - Create an `.env` file that looks like the `.env.example` file.
-- Import default sample database records with `yarn import:db` script then CTRL+C to stop the script.
+- Import default sample database records with `pnpm import:db` script then CTRL+C to stop the script.
 
 ## Installation
 
 ```bash
-$ nvm install 16
-$ nvm use 16 # Manual call to use the right Node.js version
+$ nvm install 18
+$ nvm use 18 # Manual call to use the right Node.js version
 # Automatic call node version by .nvmrc reference: https://github.com/nvm-sh/nvm#bash, so
 # when you open a new terminal, the right Node.js version will be used
-$ yarn install
+$ pnpm install
 ```
 
 ## Running the app
 
 ```bash
 # development
-$ yarn dev
+$ pnpm dev
 
 # production mode
-$ yarn build
+$ pnpm build
 
-# run production build
-$ yarn start
+# run production build (will run the build script if not built yet)
+$ pnpm start
 ```
 
 ## Usage
 
 ```bash
 # run tests
-$ yarn test
+$ pnpm test
 # run tests with coverage
-$ yarn test:coverage
+$ pnpm test:coverage
 # run tests with verbose output
-$ yarn test:verbose
+$ pnpm test:verbose
 # run tests with watch mode
-$ yarn test:watch
+$ pnpm test:watch
 # inspect code linting
-$ yarn lint
+$ pnpm lint
 # fix code linting
-$ yarn lint:fix
+$ pnpm lint:fix
 # import default sample database records, be sure
 # to have a running mongodb engine running and database empty (with no records)
-$ yarn import:db
+$ pnpm import:db
 ```
