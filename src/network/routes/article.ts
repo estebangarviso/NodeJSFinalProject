@@ -7,19 +7,20 @@ import {
 } from '../../schemas/article'
 import validatorCompiler from './utils/validatorCompiler'
 import response from './response'
-import ArticleService from '../../services/article'
+import ArticleRepository from '../../repositories/article'
 import { IArticle } from '../../database/mongo/models/article'
+import { ARTICLE_UNITIES_ENUM } from '../../utils/article'
 
 const ArticleRouter = Router()
 
 ArticleRouter.route('/article')
-  .get(async (req, res, next) => {
+  .get(async (_req, res, next) => {
     try {
-      const articleService = new ArticleService()
+      const articleRepository = new ArticleRepository()
 
       response({
         error: false,
-        message: await articleService.getAllArticles(),
+        message: await articleRepository.getAllArticles(),
         res,
         status: 200
       })
@@ -38,15 +39,15 @@ ArticleRouter.route('/article')
             sku,
             title,
             shortDescription,
-            unity,
-            qtyStock,
-            unitPrice,
-            isVirtual,
-            isAvailable
+            unity = ARTICLE_UNITIES_ENUM.ea,
+            qtyStock = 0,
+            unitPrice = 0,
+            isVirtual = false,
+            isAvailable = true
           }
         } = req
 
-        const articleService = new ArticleService({
+        const articleRepository = new ArticleRepository({
           sku,
           title,
           shortDescription,
@@ -59,7 +60,7 @@ ArticleRouter.route('/article')
 
         response({
           error: false,
-          message: await articleService.saveArticle(),
+          message: await articleRepository.saveArticle(),
           res,
           status: 201
         })
@@ -76,11 +77,11 @@ ArticleRouter.route('/article/:id')
     } = req
 
     try {
-      const articleService = new ArticleService({ id })
+      const articleRepository = new ArticleRepository({ id })
 
       response({
         error: false,
-        message: await articleService.getArticleByID(),
+        message: await articleRepository.getArticleByID(),
         res,
         status: 200
       })
@@ -96,11 +97,11 @@ ArticleRouter.route('/article/:id')
         const {
           params: { id }
         } = req
-        const articleService = new ArticleService({ id })
+        const articleRepository = new ArticleRepository({ id })
 
         response({
           error: false,
-          message: (await articleService.removeArticleByID()) as IArticle,
+          message: (await articleRepository.removeArticleByID()) as IArticle,
           res,
           status: 200
         })
@@ -130,7 +131,7 @@ ArticleRouter.route('/article/:id')
       } = req
 
       try {
-        const articleService = new ArticleService({
+        const articleRepository = new ArticleRepository({
           id,
           title,
           shortDescription,
@@ -143,7 +144,7 @@ ArticleRouter.route('/article/:id')
 
         response({
           error: false,
-          message: (await articleService.updateOneArticle()) as IArticle,
+          message: (await articleRepository.updateOneArticle()) as IArticle,
           res,
           status: 200
         })
@@ -152,5 +153,4 @@ ArticleRouter.route('/article/:id')
       }
     }
   )
-
 export default ArticleRouter

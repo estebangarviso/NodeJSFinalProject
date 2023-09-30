@@ -4,30 +4,37 @@ import morgan from 'morgan'
 import { IncomingMessage, Server as HttpServer, ServerResponse } from 'http'
 import dbConnection from '../database/mongo/connection'
 import applyRoutes from './router'
+import applySwagger from '../config/swagger'
 
 class Server {
-  #app: Express
-  #connection: ReturnType<typeof dbConnection>
-  #server?: HttpServer<typeof IncomingMessage, typeof ServerResponse>
+  private _app: Express
+  private _mongoConn: ReturnType<typeof dbConnection>
+  private _server?: HttpServer<typeof IncomingMessage, typeof ServerResponse>
 
   constructor() {
-    this.#app = express()
-    this.#connection = dbConnection()
-    this.#config()
+    this._app = express()
+    this._mongoConn = dbConnection()
+    this.config()
   }
 
-  #config() {
-    this.#app.use(express.json())
-    this.#app.use(morgan(NODE_ENV === 'development' ? 'dev' : 'combined'))
-    this.#app.use(express.urlencoded({ extended: false }))
-    applyRoutes(this.#app)
+  private config() {
+    this._app.use(express.json())
+    this._app.use(morgan(NODE_ENV === 'development' ? 'dev' : 'combined'))
+    this._app.use(express.urlencoded({ extended: false }))
+    // Swagger
+    if (NODE_ENV === 'development') {
+      applySwagger(this._app)
+    }
+    applyRoutes(this._app)
   }
 
   async start() {
     try {
-      await this.#connection.connect()
-      this.#server = this.#app.listen(PORT, () => {
-        console.success(`Server running at port ${PORT}.`)
+      await this._mongoConn.connect()
+      this._server = this._app.listen(PORT, () => {
+        console.success(
+          `Server listening at http://localhost:${PORT} in ${NODE_ENV} mode`
+        )
       })
     } catch (error) {
       console.error(error)
@@ -37,8 +44,8 @@ class Server {
   async stop() {
     try {
       console.warn('Server is shutting down...')
-      await this.#connection.disconnect()
-      this.#server?.close()
+      await this._mongoConn.disconnect()
+      this._server?.close()
     } catch (error) {
       console.error(error)
     }

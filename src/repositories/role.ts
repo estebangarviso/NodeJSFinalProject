@@ -6,30 +6,30 @@ import {
   getRoleByName
 } from '../database/mongo/queries/role'
 
-export default class RoleService {
-  #id
-  #name
+export default class RoleRepository {
+  private _id
+  private _name
 
   constructor({ id = '', name = '' }: { id?: string; name?: string }) {
     if (!ROLE_IDS.includes(`${id}`)) throw new BadRequest('Role ID not allowed')
 
-    this.#id = id
-    this.#name = name
+    this._id = id
+    this._name = name
   }
 
   async saveRole() {
-    if (!ROLE_NAMES.includes(this.#name))
+    if (!ROLE_NAMES.includes(this._name))
       throw new BadRequest('Role name not allowed')
 
-    const roleExists = await getRoleByName(this.#name)
+    const roleExists = await getRoleByName(this._name)
 
     if (roleExists) throw new Conflict('Role already exists')
 
-    return await saveRole({ id: this.#id, name: this.#name })
+    return await saveRole({ id: this._id, name: this._name })
   }
 
   async getRoleByID() {
-    return await getRoleByID(this.#id)
+    return await getRoleByID(this._id)
   }
 
   static async getRoleByName(name: ROLE_NAMES) {

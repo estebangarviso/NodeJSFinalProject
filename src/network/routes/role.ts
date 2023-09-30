@@ -3,7 +3,7 @@ import { Router } from 'express'
 import { storeRoleSchema } from '../../schemas/role'
 import validatorCompiler from './utils/validatorCompiler'
 import response from './response'
-import RoleService from '../../services/role'
+import RoleRepository from '../../repositories/role'
 
 const RoleRouter = Router()
 
@@ -16,11 +16,11 @@ RoleRouter.route('/role').post(
     } = req
 
     try {
-      const roleService = new RoleService({ id, name })
+      const roleRepository = new RoleRepository({ id, name })
 
       response({
         error: false,
-        message: await roleService.saveRole(),
+        message: await roleRepository.saveRole(),
         res,
         status: 201
       })
@@ -36,11 +36,11 @@ RoleRouter.route('/role/:id').get(async (req, res, next) => {
   } = req
 
   try {
-    const roleService = new RoleService({ id })
+    const roleRepository = new RoleRepository({ id })
 
     response({
       error: false,
-      message: await roleService.getRoleByID(),
+      message: await roleRepository.getRoleByID(),
       res,
       status: 200
     })

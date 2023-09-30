@@ -4,10 +4,10 @@ import { SECRET } from '../../../config'
 import jwt, { UserJwtPayload } from 'jsonwebtoken'
 import httpErrors from 'http-errors'
 
-import UserService from '../../../services/user'
+import UserRepository from '../../../repositories/user'
 import { RequestHandler, NextFunction } from 'express'
 import { IUser } from '../../../database/mongo/models/user'
-import RoleService from '../../../services/role'
+import RoleRepository from '../../../repositories/role'
 import type { ROLE_NAMES } from '../../../utils/role'
 
 const NOT_ALLOWED_TO_BE_HERE = 'You are not allowed here!'
@@ -88,7 +88,7 @@ const verifyUser = (): RequestHandler => {
       const token = getToken(authorization)
       const payload = jwt.verify(token, SECRET)
       const { email, password } = validateUserPayload(payload as UserJwtPayload)
-      const user = await new UserService({ email, password }).login()
+      const user = await new UserRepository({ email, password }).login()
       const isLoginCorrect = Boolean(user)
 
       if (isLoginCorrect) {
@@ -120,14 +120,14 @@ const verifyByRole = (roleName: ROLE_NAMES): RequestHandler => {
       const token = getToken(authorization)
       const payload = jwt.verify(token, SECRET)
       const { email, password } = validateUserPayload(payload as UserJwtPayload)
-      const user = await new UserService({ email, password }).login()
+      const user = await new UserRepository({ email, password }).login()
       const isLoginCorrect = Boolean(user)
 
       if (isLoginCorrect) {
         const userRoleId = user?.roleId
         if (!userRoleId)
           throw new httpErrors.Unauthorized(NOT_ALLOWED_TO_BE_HERE)
-        const role = await RoleService.getRoleByName(roleName)
+        const role = await RoleRepository.getRoleByName(roleName)
         if (!role) throw new httpErrors.Unauthorized(NOT_ALLOWED_TO_BE_HERE)
         const isRoleAllowed = String(role._id) === String(userRoleId)
 
@@ -159,7 +159,7 @@ const verifyIsCurrentUser = (): RequestHandler => {
       const token = getToken(authorization)
       const payload = jwt.verify(token, SECRET) as UserJwtPayload
       const { email, password } = validateUserPayload(payload)
-      const user = await new UserService({ email, password }).login()
+      const user = await new UserRepository({ email, password }).login()
       const isLoginCorrect = Boolean(user)
 
       if (isLoginCorrect && user.id === userId) {
@@ -189,7 +189,7 @@ const refreshAccessToken = (): RequestHandler => {
       const token = getToken(authorization)
       const payload = jwt.verify(token, SECRET) as UserJwtPayload
       const { email, password } = validateUserPayload(payload)
-      const user = await new UserService({ email, password }).login()
+      const user = await new UserRepository({ email, password }).login()
       const isLoginCorrect = Boolean(user)
 
       if (!(isLoginCorrect && user.id === userId))

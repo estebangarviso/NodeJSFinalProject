@@ -1,11 +1,12 @@
 import { Type } from '@sinclair/typebox'
+import { ARTICLE_UNITIES_ENUM } from '../utils/article'
 
 export const storeArticleSchema = Type.Object({
   title: Type.String(),
   shortDescription: Type.String(),
-  unity: Type.Optional(Type.String()),
-  qtyStock: Type.Optional(Type.Number()),
-  unitPrice: Type.Optional(Type.Number()),
+  unity: Type.Optional(Type.Enum(ARTICLE_UNITIES_ENUM)),
+  qtyStock: Type.Optional(Type.Number({ minimum: 0 })),
+  unitPrice: Type.Optional(Type.Number({ minimum: 0 })),
   isVirtual: Type.Optional(Type.Boolean()),
   isAvailable: Type.Optional(Type.Boolean())
 })

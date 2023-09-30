@@ -1,11 +1,16 @@
 import { Response } from 'express'
-import { NODE_ENV } from '../../config'
-type RouterResponseHandler = (args: {
+
+export interface IResponse {
   error: boolean
   message: object | string | Response
   status: number
-  res: Response
-}) => void
+}
+
+type RouterResponseHandler = (
+  args: IResponse & {
+    res: Response
+  }
+) => void
 
 const response: RouterResponseHandler = ({
   error = true,
@@ -14,6 +19,10 @@ const response: RouterResponseHandler = ({
   res
 }) => {
   console.debug('DEBUG: response', { error, message, status })
+
+  if (error === false) {
+    return res.status(status).send(message)
+  }
 
   res.status(status).send({ error, message })
 }

@@ -3,7 +3,7 @@ import { Router } from 'express'
 import { storeCurrencySchema } from '../../schemas/currency'
 import validatorCompiler from './utils/validatorCompiler'
 import response from './response'
-import CurrencyService from '../../services/currency'
+import CurrencyRepository from '../../repositories/currency'
 
 const CurrencyRouter = Router()
 
@@ -17,7 +17,7 @@ CurrencyRouter.route('/currency')
       } = req
 
       try {
-        const currencyService = new CurrencyService({
+        const currencyRepository = new CurrencyRepository({
           id,
           name,
           symbol,
@@ -29,7 +29,7 @@ CurrencyRouter.route('/currency')
 
         response({
           error: false,
-          message: await currencyService.saveCurrency(),
+          message: await currencyRepository.saveCurrency(),
           res,
           status: 201
         })
@@ -40,10 +40,10 @@ CurrencyRouter.route('/currency')
   )
   .get(async (req, res, next) => {
     try {
-      const currencyService = new CurrencyService()
+      const currencyRepository = new CurrencyRepository()
       response({
         error: false,
-        message: await currencyService.getAllCurrencies(),
+        message: await currencyRepository.getAllCurrencies(),
         res,
         status: 200
       })
@@ -54,11 +54,11 @@ CurrencyRouter.route('/currency')
 
 CurrencyRouter.route('/currency/refresh').post(async (req, res, next) => {
   try {
-    const currencyService = new CurrencyService()
+    const currencyRepository = new CurrencyRepository()
 
     response({
       error: false,
-      message: await currencyService.refreshCurrencies(),
+      message: await currencyRepository.refreshCurrencies(),
       res,
       status: 201
     })
@@ -73,11 +73,11 @@ CurrencyRouter.route('/currency/:id').get(async (req, res, next) => {
   } = req
 
   try {
-    const currencyService = new CurrencyService({ id })
+    const currencyRepository = new CurrencyRepository({ id })
 
     response({
       error: false,
-      message: await currencyService.getCurrencyByID(),
+      message: await currencyRepository.getCurrencyByID(),
       res,
       status: 200
     })

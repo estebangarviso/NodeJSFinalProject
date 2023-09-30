@@ -1,4 +1,4 @@
-import { model, Schema, Document, Types } from 'mongoose'
+import { model, Schema, Types } from 'mongoose'
 import { ORDER_STATUS } from '../../../utils/order'
 
 export interface IOrder {
@@ -104,7 +104,7 @@ const OrderSchema = new Schema<IOrder>(
     timestamps: true,
     versionKey: false,
     toObject: {
-      transform: (_, ret: Document<IOrder>) => {
+      transform: (_, ret) => {
         delete ret._id
       }
     }

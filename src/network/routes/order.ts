@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import httpErrors from 'http-errors'
-import OrderService from '../../services/order'
+import OrderRepository from '../../repositories/order'
 import auth from './utils/auth'
 import {
   storeOrderSchema,
@@ -27,7 +27,7 @@ OrderRouter.route('/order').post(
     const { id: userId } = currentUser
 
     try {
-      const orderService = new OrderService({
+      const orderRepository = new OrderRepository({
         userId,
         receiverId,
         details
@@ -35,7 +35,7 @@ OrderRouter.route('/order').post(
 
       response({
         error: false,
-        message: await orderService.saveOrder(),
+        message: await orderRepository.saveOrder(),
         res,
         status: 201
       })
@@ -55,13 +55,13 @@ OrderRouter.route('/order/:trackingNumber')
       } = req
 
       try {
-        const orderService = new OrderService({
+        const orderRepository = new OrderRepository({
           trackingNumber
         })
 
         response({
           error: false,
-          message: await orderService.getOneOrder(),
+          message: await orderRepository.getOneOrder(),
           res,
           status: 200
         })
@@ -81,7 +81,7 @@ OrderRouter.route('/order/:trackingNumber')
       } = req
 
       try {
-        const orderService = new OrderService({
+        const orderRepository = new OrderRepository({
           trackingNumber,
           details,
           total,
@@ -90,7 +90,7 @@ OrderRouter.route('/order/:trackingNumber')
 
         response({
           error: false,
-          message: await orderService.updateOneOrder(),
+          message: await orderRepository.updateOneOrder(),
           res,
           status: 200
         })

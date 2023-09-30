@@ -2,8 +2,11 @@
 import dotenv from 'dotenv'
 import { LogLevelDesc } from 'loglevel'
 import path from 'path'
+import fs from 'fs'
 if (process.env.NODE_ENV === 'test')
   dotenv.config({ path: path.resolve(__dirname, './../../.env.test') })
+else if (fs.existsSync(path.resolve(__dirname, './../../.env.local')))
+  dotenv.config({ path: path.resolve(__dirname, './../../.env.local') })
 else dotenv.config({ path: path.resolve(__dirname, './../../.env') })
 
 export const NODE_ENV = process.env.NODE_ENV!

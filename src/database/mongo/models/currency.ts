@@ -1,4 +1,4 @@
-import { model, Schema, Document } from 'mongoose'
+import { model, Schema } from 'mongoose'
 import { CURRENCY_SYMBOLS } from '../../../utils/currency'
 
 export interface ICurrency {
@@ -48,7 +48,7 @@ const CurrencySchema = new Schema(
     timestamps: true,
     versionKey: false,
     toObject: {
-      transform: (_, ret: Document<ICurrency>) => {
+      transform: (_, ret) => {
         delete ret._id
       }
     }

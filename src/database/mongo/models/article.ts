@@ -71,8 +71,9 @@ const ArticleSchema = new Schema<IArticle>(
     timestamps: true,
     versionKey: false,
     toObject: {
-      transform: (_, ret: Document<IArticle>) => {
+      transform: (_, ret) => {
         delete ret._id
+        return ret
       }
     }
   }

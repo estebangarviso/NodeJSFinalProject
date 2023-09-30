@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import httpErrors from 'http-errors'
-import UserTransactionService from '../../services/userTransaction'
+import UserTransactionRepository from '../../repositories/userTransaction'
 import auth from './utils/auth'
 import {
   storeUserTransactionSchema,
@@ -31,11 +31,13 @@ TransactionRouter.route('/transfer/user/:id')
         if (currentUser.id !== userId)
           throw new httpErrors.Unauthorized(NOT_ALLOWED_TO_BE_HERE)
 
-        const userTransactionService = new UserTransactionService({ userId })
+        const userTransactionRepository = new UserTransactionRepository({
+          userId
+        })
 
         response({
           error: false,
-          message: await userTransactionService.getAllUserTransactions(),
+          message: await userTransactionRepository.getAllUserTransactions(),
           res,
           status: 200
         })
@@ -61,7 +63,7 @@ TransactionRouter.route('/transfer/user/:id')
         if (currentUser.id !== userId)
           throw new httpErrors.Unauthorized(NOT_ALLOWED_TO_BE_HERE)
 
-        const userTransactionService = new UserTransactionService({
+        const userTransactionRepository = new UserTransactionRepository({
           userId,
           receiverId,
           amount
@@ -69,7 +71,7 @@ TransactionRouter.route('/transfer/user/:id')
 
         response({
           error: false,
-          message: await userTransactionService.saveUserTransaction(),
+          message: await userTransactionRepository.saveUserTransaction(),
           res,
           status: 201
         })
@@ -91,11 +93,11 @@ TransactionRouter.route('/transfer/:transferId/user/:id').get(
 
       if (!currentUser)
         throw new httpErrors.Unauthorized(NOT_ALLOWED_TO_BE_HERE)
-      const userTransactionService = new UserTransactionService({
+      const userTransactionRepository = new UserTransactionRepository({
         transferId
       })
       const userTransaction =
-        await userTransactionService.getUserTransactionByID()
+        await userTransactionRepository.getUserTransactionByID()
 
       await userTransaction.populate('userId')
       await userTransaction.populate('receiverId')
@@ -135,9 +137,11 @@ TransactionRouter.route('/transfer/owner/:id').get(
       if (currentUser.id !== receiverId)
         throw new httpErrors.Unauthorized(NOT_ALLOWED_TO_BE_HERE)
 
-      const userTransactionService = new UserTransactionService({ receiverId })
+      const userTransactionRepository = new UserTransactionRepository({
+        receiverId
+      })
       const userTransactions =
-        await userTransactionService.getAllUserTransactionsByReceiverId()
+        await userTransactionRepository.getAllUserTransactionsByReceiverId()
 
       response({
         error: false,
@@ -165,13 +169,13 @@ TransactionRouter.route('/transfer/verify/:secureToken').patch(
       if (!currentUser)
         throw new httpErrors.Unauthorized(NOT_ALLOWED_TO_BE_HERE)
 
-      const userTransactionService = new UserTransactionService({
+      const userTransactionRepository = new UserTransactionRepository({
         secureToken,
-        _id,
+        id: _id,
         receiverId: currentUser.id
       })
       const verifiedTransaction =
-        await userTransactionService.verifyUserTransaction()
+        await userTransactionRepository.verifyUserTransaction()
 
       response({
         error: false,

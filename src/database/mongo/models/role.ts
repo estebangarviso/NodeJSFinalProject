@@ -1,4 +1,4 @@
-import { model, Schema, Document } from 'mongoose'
+import { model, Schema } from 'mongoose'
 import { ROLE_NAMES } from '../../../utils/role'
 
 export interface IRole {
@@ -23,7 +23,7 @@ const RoleSchema = new Schema(
     timestamps: true,
     versionKey: false,
     toObject: {
-      transform: (_, ret: Document<IRole>) => {
+      transform: (_, ret) => {
         delete ret._id
       }
     }

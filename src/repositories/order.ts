@@ -10,17 +10,17 @@ import {
 import { getUserTransactionsBalance } from '../database/mongo/queries/userTransaction'
 import { getDefaultCurrency } from '../database/mongo/queries/currency'
 import { getAllArticlesByID } from '../database/mongo/queries/article'
-import UserService from './user'
-import UserTransactionService from './userTransaction'
+import UserRepository from './user'
+import UserTransactionRepository from './userTransaction'
 import { ORDER_STATUS } from '../utils/order'
 
-export default class OrderService {
-  #trackingNumber
-  #userId
-  #receiverId
-  #total
-  #details
-  #status
+export default class OrderRepository {
+  private _trackingNumber
+  private _userId
+  private _receiverId
+  private _total
+  private _details
+  private _status
 
   constructor(
     args: {
@@ -40,29 +40,29 @@ export default class OrderService {
       total = 0,
       status = ''
     } = args
-    this.#trackingNumber = trackingNumber
-    this.#userId = userId
-    this.#receiverId = receiverId
-    this.#details = details
-    this.#total = total
-    this.#status = status
+    this._trackingNumber = trackingNumber
+    this._userId = userId
+    this._receiverId = receiverId
+    this._details = details
+    this._total = total
+    this._status = status
   }
 
   async saveOrder() {
-    if (!this.#userId)
+    if (!this._userId)
       throw new httpErrors.BadRequest('Missing required field: userId')
-    if (!this.#receiverId)
+    if (!this._receiverId)
       throw new httpErrors.BadRequest('Missing required field: receiverId')
-    if (this.#details.length === 0)
+    if (this._details.length === 0)
       throw new httpErrors.BadRequest('Missing required field: details')
 
-    if (!this.#status) this.#status = ORDER_STATUS.COMPLETED
+    if (!this._status) this._status = ORDER_STATUS.COMPLETED
 
-    const user = await new UserService({
-      userId: this.#userId
+    const user = await new UserRepository({
+      userId: this._userId
     }).verifyUserExists()
-    const receiver = await new UserService({
-      userId: this.#receiverId
+    const receiver = await new UserRepository({
+      userId: this._receiverId
     }).verifyUserExists()
     /* eslint-disable */
     const currentBalance = await getUserTransactionsBalance(user._id)
@@ -70,12 +70,12 @@ export default class OrderService {
     const currencyId = defaultCurrency._id
     const currencyRate = defaultCurrency.rate
 
-    const articleIds = this.#details.map(detail => detail.articleId)
+    const articleIds = this._details.map(detail => detail.articleId)
     const articles = await getAllArticlesByID(articleIds)
     if (articles.length === 0)
       throw new httpErrors.BadRequest('Invalid articleId')
 
-    const details = this.#details.map(detail => {
+    const details = this._details.map(detail => {
       const article = articles.find(art => art.id === detail.articleId)
       if (!article) throw new httpErrors.NotFound('Article not found')
 
@@ -106,12 +106,13 @@ export default class OrderService {
         `You don't have enough money to make this purchase. Your current balance is ${formattedBalance} and the total of this purchase is ${formattedTotal}`
       )
 
-    const userTransactionService = new UserTransactionService({
+    const userTransactionRepository = new UserTransactionRepository({
       userId: user.id,
       receiverId: receiver.id,
       amount: total
     })
-    const userTransaction = await userTransactionService.saveUserTransaction()
+    const userTransaction =
+      await userTransactionRepository.saveUserTransaction()
     if (!userTransaction)
       throw new httpErrors.InternalServerError('Error saving userTransaction')
 
@@ -124,7 +125,7 @@ export default class OrderService {
       currencyRate,
       details,
       total,
-      status: this.#status
+      status: this._status
     }
 
     return await saveOrder(order)
@@ -135,24 +136,24 @@ export default class OrderService {
   }
 
   async getOneOrder() {
-    if (!this.#trackingNumber)
+    if (!this._trackingNumber)
       throw new httpErrors.BadRequest('Missing required field: trackingNumber')
 
-    return await getOneOrder(this.#trackingNumber)
+    return await getOneOrder(this._trackingNumber)
   }
 
   async updateOneOrder() {
-    if (!this.#trackingNumber)
+    if (!this._trackingNumber)
       throw new httpErrors.BadRequest('Missing required field: trackingNumber')
     const defaultCurrency = await getDefaultCurrency()
     const currencyId = defaultCurrency._id
     const currencyRate = defaultCurrency.rate
-    const articleIds = this.#details.map(detail => detail.articleId)
+    const articleIds = this._details.map(detail => detail.articleId)
     const articles = await getAllArticlesByID(articleIds)
     if (articles.length === 0)
       throw new httpErrors.BadRequest('Invalid articleId')
 
-    const details = this.#details.map(detail => {
+    const details = this._details.map(detail => {
       const article = articles.find(art => art.id === detail.articleId)
       if (!article) throw new httpErrors.NotFound('Article not found')
 
@@ -172,9 +173,9 @@ export default class OrderService {
       currencyRate,
       details,
       total,
-      status: this.#status
+      status: this._status
     }
     // eslint-disable-next-line
-    return await updateOneOrder(this.#trackingNumber, order)
+    return await updateOneOrder(this._trackingNumber, order)
   }
 }

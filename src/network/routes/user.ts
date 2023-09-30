@@ -9,20 +9,20 @@ import {
 import validatorCompiler from './utils/validatorCompiler'
 import auth from './utils/auth'
 import response from './response'
-import UserService from '../../services/user'
+import UserRepository from '../../repositories/user'
 import { HydratedDocument } from 'mongoose'
 import { IUser } from '../../database/mongo/models/user'
-import UserTransactionService from '../../services/userTransaction'
+import UserTransactionRepository from '../../repositories/userTransaction'
 
 const UserRouter = Router()
 
 UserRouter.route('/user').get(auth.verifyUser(), async (req, res, next) => {
   try {
-    const userService = new UserService()
+    const userRepository = new UserRepository()
 
     response({
       error: false,
-      message: await userService.getAllUsers(),
+      message: await userRepository.getAllUsers(),
       res,
       status: 200
     })
@@ -38,8 +38,8 @@ UserRouter.route('/user/profile').get(
       const { currentUser } = req
       if (!currentUser) throw new httpErrors.Unauthorized('Unauthorized')
 
-      const userService = new UserService({ userId: currentUser.id })
-      const profile = (await userService.getUserByID()).toObject()
+      const userRepository = new UserRepository({ userId: currentUser.id })
+      const profile = (await userRepository.getUserByID()).toObject()
 
       response({
         error: false,
@@ -60,11 +60,12 @@ UserRouter.route('/user/balance').get(
       const { currentUser } = req
       if (!currentUser) throw new httpErrors.Unauthorized('Unauthorized')
 
-      const userTransactionService = new UserTransactionService({
+      const userTransactionRepository = new UserTransactionRepository({
         userId: currentUser.id
       })
 
-      const balance = await userTransactionService.getUserTransactionsBalance()
+      const balance =
+        await userTransactionRepository.getUserTransactionsBalance()
 
       response({
         error: false,
@@ -89,7 +90,7 @@ UserRouter.route('/user/signup').post(
 
       response({
         error: false,
-        message: await new UserService({
+        message: await new UserRepository({
           firstName,
           lastName,
           email,
@@ -115,7 +116,10 @@ UserRouter.route('/user/login').post(
         refreshToken,
         body: { email, password }
       } = req
-      const isLoginCorrect = await new UserService({ email, password }).login()
+      const isLoginCorrect = await new UserRepository({
+        email,
+        password
+      }).login()
 
       if (isLoginCorrect)
         return response({
@@ -144,11 +148,11 @@ UserRouter.route('/user/:id')
         const {
           params: { id: userId }
         } = req
-        const userService = new UserService({ userId })
+        const userRepository = new UserRepository({ userId })
 
         response({
           error: false,
-          message: await userService.getUserByID(),
+          message: await userRepository.getUserByID(),
           res,
           status: 200
         })
@@ -165,11 +169,11 @@ UserRouter.route('/user/:id')
         const {
           params: { id }
         } = req
-        const userService = new UserService({ userId: id })
+        const userRepository = new UserRepository({ userId: id })
 
         response({
           error: false,
-          message: await userService.removeUserByID(),
+          message: await userRepository.removeUserByID(),
           res,
           status: 200
         })
@@ -191,7 +195,7 @@ UserRouter.route('/user/:id')
       try {
         response({
           error: false,
-          message: (await new UserService({
+          message: (await new UserRepository({
             userId,
             firstName,
             lastName,
