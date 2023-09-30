@@ -1,4 +1,4 @@
-import axios, { AxiosError } from 'axios'
+import axios from 'axios'
 import server from '../../../src/network/server'
 import { faker } from '@faker-js/faker'
 import { IUser, TUser } from '../../../src/database/mongo/models/user'
@@ -335,12 +335,11 @@ describe('E2E tests: Use cases for the API', () => {
           if (!profiles.customer)
             throw new Error('Customer profile is not defined')
 
-          const amount = newAmountToDeposit
           const response = await axios.post<{
             message: HydratedDocument<IUserTransactions>
           }>(
             `/transfer/user/${profiles.customer.id}`,
-            { amount, receiverId: profiles.customer.id },
+            { amount: newAmountToDeposit, receiverId: profiles.customer.id },
             {
               headers: {
                 authorization: `Bearer ${customerTokens.accessToken}`
@@ -349,7 +348,9 @@ describe('E2E tests: Use cases for the API', () => {
           )
           expect(response.status).toBe(201)
           expect(response.data.message.userId).toBe(profiles.customer._id)
-          expect(Number(response.data.message.amount)).toBe(Number(amount))
+          expect(Number(response.data.message.amount)).toBe(
+            Number(newAmountToDeposit)
+          )
           expect(response.data.message.status).toBe('paid')
           expect(response.data.message.entry).toBe('debit') // accounting double entry. The ownership of the money is transferred from the customer to the customer so the ecommerce is holding the customer's money
 
