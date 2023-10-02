@@ -1,4 +1,4 @@
-name: Deploy to Amazon ECS
+name: Deploy DEV Overlay to Amazon ECS
 on:
   push:
     branches:
@@ -15,9 +15,9 @@ env:
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 jobs:
   build:
-    name: Deployment
+    name: DEV Deployment
     runs-on: ubuntu-latest
-    environment: production
+    environment: dev
 
     steps:
       - name: Checkout
