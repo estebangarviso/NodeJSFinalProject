@@ -42,12 +42,10 @@ jobs:
         id: download-task-def
         run: |
           # Download the task definition from Amazon ECS
-          aws ecs describe-task-definition --task-definition ${{ env.ECS_TASK_DEFINITION }} --region ${{ env.AWS_REGION }} --query taskDefinition) > task-definition.json
-
           # Sanitize the JSON input
+          # Update the container image
+          aws ecs describe-task-definition --task-definition ${{ env.ECS_TASK_DEFINITION }} --region ${{ env.AWS_REGION }} --query taskDefinition) > task-definition.json
           echo $(jq 'del(.compatibilities,.taskDefinitionArn,.requiresAttributes,.revision,.status,.registeredAt,.registeredBy)' task-definition.json) > task-definition.json
-
-          # Update the container image (containerDefinitions is an array of object that contains the image name which is CONTAINER_NAME, find the object with the name CONTAINER_NAME and update the image value)
           echo $(jq --arg IMAGE $IMAGE --arg CONTAINER_NAME $CONTAINER_NAME '.containerDefinitions |= map(if .name == $CONTAINER_NAME then .image = $IMAGE else . end)' task-definition.json) > task-definition.json
 
       - name: Build, tag, and push image to Amazon ECR
