@@ -49,12 +49,10 @@ jobs:
 
       - name: Alter task definition JSON with env variables
         id: alter-task-def
-        env:
-          IMAGE_TAG: ${{ steps.build-image.outputs.image }}
         run: |
           # Alter the task definition JSON file.
-          sed -i "s/\__ECS_SERVICE/${ECS_SERVICE}/g" $GITHUB_WORKSPACE/$ECS_TASK_DEFINITION
-          sed -i "s/\__IMAGE_TAG/${IMAGE_TAG}/g" $GITHUB_WORKSPACE/$ECS_TASK_DEFINITION
+          sed -i "s/__ECS_SERVICE/${{ env.ECS_SERVICE }}/g" $GITHUB_WORKSPACE/$ECS_TASK_DEFINITION
+          sed -i "s/__IMAGE_TAG/${{ steps.build-image.outputs.image }}/g" $GITHUB_WORKSPACE/$ECS_TASK_DEFINITION
 
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def
