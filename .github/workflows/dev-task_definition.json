@@ -1,56 +1,43 @@
 {
-  "taskDefinitionArn": "arn:aws:ecs:us-east-2:602624415794:task-definition/dev-ecommerce-task:6",
+  "taskDefinitionArn": "arn:aws:ecs:us-east-2:602624415794:task-definition/__ECS_SERVICE-task",
   "containerDefinitions": [
     {
-      "name": "dev-ecommerce",
-      "image": "602624415794.dkr.ecr.us-east-2.amazonaws.com/ecommerce:latest",
+      "name": "__ECS_SERVICE",
+      "image": "__IMAGE_TAG",
       "cpu": 0,
       "portMappings": [
         {
-          "name": "dev-ecommerce-8080-tcp",
+          "name": "__ECS_SERVICE-8080-tcp",
           "containerPort": 8080,
-          "protocol": "tcp"
+          "hostPort": 8080,
+          "protocol": "tcp",
+          "appProtocol": "http"
         }
       ],
       "essential": true,
       "environment": [],
-      "environmentFiles": [],
       "mountPoints": [],
       "volumesFrom": [],
-      "ulimits": [],
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
           "awslogs-create-group": "true",
-          "awslogs-group": "/ecs/dev-ecommerce-task",
+          "awslogs-group": "/ecs/__ECS_SERVICE-task",
           "awslogs-region": "us-east-2",
           "awslogs-stream-prefix": "ecs"
         },
         "secretOptions": []
-      },
-      "healthCheck": {
-        "command": [
-          "CMD-SHELL",
-          "curl -f http://localhost:8080/api/healthcheck || exit 1"
-        ],
-        "interval": 30,
-        "timeout": 5,
-        "retries": 3
       }
     }
   ],
-  "family": "dev-ecommerce-task",
+  "family": "__ECS_SERVICE-task",
   "executionRoleArn": "arn:aws:iam::602624415794:role/ecsTaskExecutionRole",
   "networkMode": "awsvpc",
-  "revision": 6,
   "volumes": [],
   "status": "ACTIVE",
   "requiresAttributes": [
     {
       "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
-    },
-    {
-      "name": "com.amazonaws.ecs.capability.docker-remote-api.1.24"
     },
     {
       "name": "ecs.capability.execution-role-awslogs"
@@ -60,9 +47,6 @@
     },
     {
       "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
-    },
-    {
-      "name": "ecs.capability.container-health-check"
     },
     {
       "name": "ecs.capability.execution-role-ecr-pull"
@@ -85,8 +69,5 @@
   "runtimePlatform": {
     "cpuArchitecture": "X86_64",
     "operatingSystemFamily": "LINUX"
-  },
-  "registeredAt": "2023-10-02T18:45:28.049Z",
-  "registeredBy": "arn:aws:iam::602624415794:root",
-  "tags": []
+  }
 }
