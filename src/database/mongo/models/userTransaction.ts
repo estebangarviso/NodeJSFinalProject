@@ -1,4 +1,4 @@
-import { model, Schema, Document, Types } from 'mongoose'
+import { model, Schema, Types } from 'mongoose'
 import {
   TRANSACTION_STATUS,
   TRANSACTION_ENTRIES

@@ -1,7 +1,7 @@
 import server from './network/server'
 
-function bootstrap() {
+const bootstrap = () => {
   return server.start()
 }
 
-bootstrap()
+void bootstrap()

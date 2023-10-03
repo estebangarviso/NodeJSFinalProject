@@ -1,5 +1,4 @@
 import { model, Schema, Types } from 'mongoose'
-import { NODE_ENV } from '../../../config'
 import { ROLES_IDS } from './../../../utils/role'
 
 export interface IUser {
@@ -73,7 +72,6 @@ const UserSchema = new Schema<IUser>(
     versionKey: false,
     toObject: {
       transform: (_, ret) => {
-        /* eslint-disable */
         delete ret.salt
         delete ret.hash
       }

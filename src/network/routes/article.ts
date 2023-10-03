@@ -1,5 +1,7 @@
-import { Router } from 'express'
-import auth from './utils/auth'
+/* eslint-disable eslint-comments/disable-enable-pair */
+/* eslint-disable @typescript-eslint/no-misused-promises */
+import { Request, Router } from 'express'
+import { verifyByRole } from './utils/auth'
 import {
   articleIDSchema,
   storeArticleSchema,
@@ -11,7 +13,22 @@ import ArticleRepository from '../../repositories/article'
 import { IArticle } from '../../database/mongo/models/article'
 import { ARTICLE_UNITIES_ENUM } from '../../utils/article'
 
-const ArticleRouter = Router()
+type ArticleRequest = Request<
+  { id: string },
+  Record<string, never>,
+  {
+    sku: string
+    title: string
+    shortDescription: string
+    unity: string
+    qtyStock: number
+    unitPrice: number
+    isVirtual: boolean
+    isAvailable: boolean
+  }
+>
+
+const ArticleRouter: Router = Router()
 
 ArticleRouter.route('/article')
   .get(async (_req, res, next) => {
@@ -30,10 +47,9 @@ ArticleRouter.route('/article')
   })
   .post(
     validatorCompiler(storeArticleSchema, 'body'),
-    auth.verifyByRole('salesman'),
-    async (req, res, next) => {
+    verifyByRole('salesman'),
+    async (req: ArticleRequest, res, next) => {
       try {
-        /* eslint-disable */
         const {
           body: {
             sku,
@@ -91,7 +107,7 @@ ArticleRouter.route('/article/:id')
   })
   .delete(
     validatorCompiler(articleIDSchema, 'params'),
-    auth.verifyByRole('salesman'),
+    verifyByRole('salesman'),
     async (req, res, next) => {
       try {
         const {
@@ -113,12 +129,10 @@ ArticleRouter.route('/article/:id')
   .patch(
     validatorCompiler(articleIDSchema, 'params'),
     validatorCompiler(updateArticleSchema, 'body'),
-    auth.verifyByRole('salesman'),
-    async (req, res, next) => {
+    verifyByRole('salesman'),
+    async (req: ArticleRequest, res, next) => {
       const {
-        /* eslint-disable */
         body: {
-          sku,
           title,
           shortDescription,
           unity,

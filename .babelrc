@@ -1,22 +1,14 @@
 {
-	"presets": [
-		[
-			"minify",
-			{
-				"mangle": false,
-				"keepFnName": true,
-				"keepClassName": true,
-				"removeConsole": false,
-				"removeDebugger": false
-			}
-		]
-	],
-	"plugins": [
-		[
-			"transform-inline-environment-variables",
-			{
-				"exclude": ["HOSTNAME", "NODE_VERSION", "TZ", "LANG"]
-			}
-		]
-	]
+  "presets": [
+    [
+      "minify",
+      {
+        "mangle": false,
+        "keepFnName": true,
+        "keepClassName": true,
+        "removeConsole": false,
+        "removeDebugger": true
+      }
+    ]
+  ]
 }

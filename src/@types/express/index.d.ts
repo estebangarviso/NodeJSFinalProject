@@ -1,4 +1,3 @@
-/* eslint no-unused-vars: 0 */
 import express from 'express'
 import { JwtPayload } from 'jsonwebtoken'
 export default {}

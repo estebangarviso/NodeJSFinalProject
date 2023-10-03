@@ -1,16 +1,20 @@
-import { Router } from 'express'
+import { Request, Router } from 'express'
 
 import { storeRoleSchema } from '../../schemas/role'
 import validatorCompiler from './utils/validatorCompiler'
 import response from './response'
 import RoleRepository from '../../repositories/role'
 
-const RoleRouter = Router()
+type RoleRequest = Request<
+  { id: string },
+  Record<string, never>,
+  { id: string; name: string }
+>
+const RoleRouter: Router = Router()
 
 RoleRouter.route('/role').post(
   validatorCompiler(storeRoleSchema, 'body'),
-  async (req, res, next) => {
-    /* eslint-disable */
+  async (req: RoleRequest, res, next) => {
     const {
       body: { id, name }
     } = req
@@ -30,7 +34,7 @@ RoleRouter.route('/role').post(
   }
 )
 
-RoleRouter.route('/role/:id').get(async (req, res, next) => {
+RoleRouter.route('/role/:id').get(async (req: RoleRequest, res, next) => {
   const {
     params: { id }
   } = req

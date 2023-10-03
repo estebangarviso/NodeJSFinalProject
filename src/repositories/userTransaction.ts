@@ -166,6 +166,7 @@ export default class UserTransactionRepository {
     const userId = foundUser._id
     const balance = await getUserTransactionsBalance(userId)
     if (!balance) throw new httpErrors.NotFound('User transactions not found')
+
     return balance
   }
 }

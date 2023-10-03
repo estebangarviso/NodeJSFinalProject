@@ -1,4 +1,3 @@
-/* eslint-disable */
 import server from '../network/server'
 import axios from 'axios'
 import { faker } from '@faker-js/faker'
@@ -45,29 +44,26 @@ const importSalesman = async () => {
 
 const login = async () => {
   const { email, password } = fakeSalesman
-  const response = await axios.post('/user/login', {
+  const response = await axios.post<{ accessToken: string }>('/user/login', {
     email,
     password
   })
-  if (response.status !== 200) console.error(`Error logging in`)
-  else {
+  if (response.status === 200) {
     console.success(`Logged in`)
-    accessToken = response.data.message.accessToken
+    accessToken = response.data.accessToken
 
-    const profileResponse = await axios.get('/user/profile', {
+    const profileResponse = await axios.get<{ id: string }>('/user/profile', {
       headers: {
         Authorization: `Bearer ${accessToken}`
       }
     })
     const {
-      data: {
-        message: { id }
-      }
+      data: { id }
     } = profileResponse
 
     console.success(`Profile fetched`)
     userId = id
-  }
+  } else console.error(`Error logging in`)
 }
 
 const importArticles = async () => {
@@ -106,4 +102,4 @@ const main = async () => {
   process.exit(0)
 }
 
-main()
+void main()

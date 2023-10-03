@@ -64,7 +64,6 @@ export default class OrderRepository {
     const receiver = await new UserRepository({
       userId: this._receiverId
     }).verifyUserExists()
-    /* eslint-disable */
     const currentBalance = await getUserTransactionsBalance(user._id)
     const defaultCurrency = await getDefaultCurrency()
     const currencyId = defaultCurrency._id
@@ -107,8 +106,8 @@ export default class OrderRepository {
       )
 
     const userTransactionRepository = new UserTransactionRepository({
-      userId: user.id,
-      receiverId: receiver.id,
+      userId: user._id.toString(),
+      receiverId: receiver._id.toString(),
       amount: total
     })
     const userTransaction =
@@ -175,7 +174,7 @@ export default class OrderRepository {
       total,
       status: this._status
     }
-    // eslint-disable-next-line
+
     return await updateOneOrder(this._trackingNumber, order)
   }
 }

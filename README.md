@@ -42,7 +42,7 @@ $ pnpm dev
 # production mode
 $ pnpm build
 
-# run production build (will run the build script if not built yet)
+# run production build (after build)
 $ pnpm start
 ```
 
