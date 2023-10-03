@@ -44,7 +44,7 @@ jobs:
           # Download the task definition from Amazon ECS
           # Sanitize the JSON input
           # Update the container image
-          aws ecs describe-task-definition --task-definition ${{ env.ECS_TASK_DEFINITION }} --region ${{ env.AWS_REGION }} --query taskDefinition) > task-definition.json
+          aws ecs describe-task-definition --task-definition ${{ env.ECS_TASK_DEFINITION }} --region ${{ env.AWS_REGION }} --query taskDefinition > task-definition.json
           echo $(jq 'del(.compatibilities,.taskDefinitionArn,.requiresAttributes,.revision,.status,.registeredAt,.registeredBy)' task-definition.json) > task-definition.json
           echo $(jq --arg IMAGE $IMAGE --arg CONTAINER_NAME $CONTAINER_NAME '.containerDefinitions |= map(if .name == $CONTAINER_NAME then .image = $IMAGE else . end)' task-definition.json) > task-definition.json
 
