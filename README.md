@@ -19,9 +19,10 @@
 ## Requirements
 
 - Node.js v18 (use [nvm](https://github.com/nvm-sh/nvm) to manage multiple Node.js versions.)
+- Docker (for MongoDB)
 - pnpm v8 (minimum)
 - Create an `.env` file that looks like the `.env.example` file.
-- Import default sample database records with `pnpm import:db` script then CTRL+C to stop the script.
+- Seed default sample database records with `pnpm import:db` script then CTRL+C to stop the script.
 
 ## Installation
 
@@ -44,6 +45,9 @@ $ pnpm build
 
 # run production build (after build)
 $ pnpm start
+
+# download secrets from AWS Secrets Manager
+$ pnpm env:dev
 ```
 
 ## Usage
@@ -65,3 +69,20 @@ $ pnpm lint:fix
 # to have a running mongodb engine running and database empty (with no records)
 $ pnpm import:db
 ```
+
+# CI/CD
+
+<p align="center"><img src="public/Diagram.png" style="height: 300px; width: auto;" /></p>
+
+GitHub Actions CI/CD pipeline is configured to run on every push to the `develop` branch. The pipeline will run the following steps:
+
+- Checkout the code
+- Configure AWS credentials
+- Login to AWS ECR
+- Prepare task definition file
+- Build the Docker image
+- Push the Docker image to AWS ECR
+- Use new task definition file to update the ECS service with the new image
+- Deploy the application to the ECS service
+
+AWS will be in charge give docker the permissions to download app secrets from AWS Secret Manager using a AWS Key Management Service (KMS) and it will deploy the application to the ECS service inside a ECS Cluster. The ECS service, which use Fargate serverless, is configured to run 2 tasks (2 containers) with the application. Also the ECS service is configured to run behind an Application Load Balancer (ALB) that will be used to route traffic to the application (SSL is not configured). Thus so you can access the application using the ALB DNS name through global internet HTTP protocol.
