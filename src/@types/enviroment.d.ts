@@ -1,4 +1,3 @@
-/* eslint no-unused-vars: 0 */
 import { LogLevelDesc } from 'loglevel'
 export {}
 declare global {

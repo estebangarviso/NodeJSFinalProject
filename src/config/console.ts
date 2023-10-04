@@ -1,4 +1,6 @@
-/* eslint-disable */
+/* eslint-disable eslint-comments/disable-enable-pair */
+/* eslint-disable prefer-arrow/prefer-arrow-functions */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import logger from 'loglevel'
 import chalk from 'chalk'
 import { LOG_LEVEL } from './index'

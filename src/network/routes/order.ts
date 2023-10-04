@@ -1,7 +1,7 @@
-import { Router } from 'express'
+import { Request, Router } from 'express'
 import httpErrors from 'http-errors'
 import OrderRepository from '../../repositories/order'
-import auth from './utils/auth'
+import { verifyUser, verifyIsCurrentUser } from './utils/auth'
 import {
   storeOrderSchema,
   orderTrackingNumberSchema,
@@ -9,16 +9,26 @@ import {
 } from '../../schemas/order'
 import validatorCompiler from './utils/validatorCompiler'
 import response from './response'
+import { TBeforeSaveOrder } from 'database/mongo/models/order'
 
-const OrderRouter = Router()
+type OrderRequest = Request<
+  { id: string },
+  Record<string, never>,
+  { details: TBeforeSaveOrder['details']; receiverId: string }
+>
+type OrderPatchRequest = Request<
+  { trackingNumber: string },
+  Record<string, never>,
+  { details?: TBeforeSaveOrder['details']; total?: number; status?: string }
+>
+const OrderRouter: Router = Router()
 
 const NOT_ALLOWED_TO_BE_HERE = 'You are not allowed here!'
 
 OrderRouter.route('/order').post(
   validatorCompiler(storeOrderSchema, 'body'),
-  auth.verifyUser(),
-  async (req, res, next) => {
-    /* eslint-disable */
+  verifyUser(),
+  async (req: OrderRequest, res, next) => {
     const {
       currentUser,
       body: { details, receiverId }
@@ -48,7 +58,7 @@ OrderRouter.route('/order').post(
 OrderRouter.route('/order/:trackingNumber')
   .get(
     validatorCompiler(orderTrackingNumberSchema, 'params'),
-    auth.verifyIsCurrentUser,
+    verifyIsCurrentUser,
     async (req, res, next) => {
       const {
         params: { trackingNumber }
@@ -73,8 +83,8 @@ OrderRouter.route('/order/:trackingNumber')
   .patch(
     validatorCompiler(orderTrackingNumberSchema, 'params'),
     validatorCompiler(updateOrderSchema, 'body'),
-    auth.verifyIsCurrentUser,
-    async (req, res, next) => {
+    verifyIsCurrentUser,
+    async (req: OrderPatchRequest, res, next) => {
       const {
         params: { trackingNumber },
         body: { details, total, status }

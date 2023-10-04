@@ -27,6 +27,7 @@ const run = async () => {
   } catch (error) {
     // For a list of exceptions thrown, see
     // https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
+    console.error('KMSError', error)
     throw error
   }
 

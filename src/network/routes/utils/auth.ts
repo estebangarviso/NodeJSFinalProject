@@ -1,4 +1,5 @@
-/* eslint-disable */
+/* eslint-disable eslint-comments/disable-enable-pair */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { SECRET } from '../../../config'
 
 import jwt, { UserJwtPayload } from 'jsonwebtoken'
@@ -6,7 +7,6 @@ import httpErrors from 'http-errors'
 
 import UserRepository from '../../../repositories/user'
 import { RequestHandler, NextFunction } from 'express'
-import { IUser } from '../../../database/mongo/models/user'
 import RoleRepository from '../../../repositories/role'
 import type { ROLE_NAMES } from '../../../utils/role'
 
@@ -27,7 +27,7 @@ const validateUserPayload: (payload: UserJwtPayload) => {
   email: string
   password: string
 } = payload => {
-  const { email, password, iat, exp, ...rest } = payload
+  const { email, password, ...rest } = payload
 
   if (!email) throw new httpErrors.Unauthorized(NOT_ALLOWED_TO_BE_HERE)
 
@@ -39,10 +39,7 @@ const validateUserPayload: (payload: UserJwtPayload) => {
   return { email, password }
 }
 
-const handleError: (error: object, next: NextFunction) => void = (
-  error,
-  next
-) => {
+const handleError: (error: any, next: NextFunction) => void = (error, next) => {
   console.error('error', error)
 
   if (error instanceof jwt.TokenExpiredError)
@@ -53,7 +50,7 @@ const handleError: (error: object, next: NextFunction) => void = (
   return next(new httpErrors.Unauthorized(NOT_ALLOWED_TO_BE_HERE))
 }
 
-const generateTokens = (): RequestHandler<
+export const generateTokens = (): RequestHandler<
   any,
   any,
   { email: string; password: string }
@@ -77,7 +74,7 @@ const generateTokens = (): RequestHandler<
   }
 }
 
-const verifyUser = (): RequestHandler => {
+export const verifyUser = (): RequestHandler => {
   return async (req, res, next) => {
     try {
       const {
@@ -101,15 +98,12 @@ const verifyUser = (): RequestHandler => {
 
       return next(new httpErrors.Unauthorized(NOT_ALLOWED_TO_BE_HERE))
     } catch (error: any) {
-      /* eslint-disable */
-      console.log('verifyUser error', error)
-
       return handleError(error, next)
     }
   }
 }
 
-const verifyByRole = (roleName: ROLE_NAMES): RequestHandler => {
+export const verifyByRole = (roleName: ROLE_NAMES): RequestHandler => {
   return async (req, res, next) => {
     try {
       const {
@@ -141,14 +135,14 @@ const verifyByRole = (roleName: ROLE_NAMES): RequestHandler => {
       }
 
       return next(new httpErrors.Unauthorized(NOT_ALLOWED_TO_BE_HERE))
-    } catch (error: any) {
+    } catch (error) {
       return handleError(error, next)
     }
   }
 }
 
-const verifyIsCurrentUser = (): RequestHandler => {
-  return async (req, res, next) => {
+export const verifyIsCurrentUser = (): RequestHandler => {
+  return async (req, _res, next) => {
     try {
       const {
         params: { id: userId },
@@ -177,7 +171,7 @@ const verifyIsCurrentUser = (): RequestHandler => {
   }
 }
 
-const refreshAccessToken = (): RequestHandler => {
+export const refreshAccessToken = (): RequestHandler => {
   return async (req, res, next) => {
     try {
       const {
@@ -202,17 +196,8 @@ const refreshAccessToken = (): RequestHandler => {
       req.accessToken = accessToken
       req.refreshToken = token
       next()
-    } catch (error: any) {
+    } catch (error) {
       return handleError(error, next)
     }
   }
-}
-
-export default {
-  getToken,
-  generateTokens,
-  verifyUser,
-  verifyIsCurrentUser,
-  verifyByRole,
-  refreshAccessToken
 }

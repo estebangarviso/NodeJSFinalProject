@@ -66,6 +66,7 @@ export const getUserTransactionsBalance: (
   const balance = foundUserTransactions.reduce((acc, curr) => {
     if (curr.entry === 'debit') return acc + curr.amount
     if (curr.entry === 'credit') return acc - curr.amount
+
     return acc
   }, 0)
 

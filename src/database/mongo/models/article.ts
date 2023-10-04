@@ -1,4 +1,4 @@
-import { model, Schema, Document, Types } from 'mongoose'
+import { model, Schema, Types } from 'mongoose'
 import { ARTICLE_UNITIES } from './../../../utils/article'
 
 export interface IArticle {
@@ -73,6 +73,7 @@ const ArticleSchema = new Schema<IArticle>(
     toObject: {
       transform: (_, ret) => {
         delete ret._id
+
         return ret
       }
     }

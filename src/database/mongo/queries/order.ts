@@ -6,10 +6,8 @@ import { getAllArticlesByID } from './article'
 
 /**
  * Get all orders
- *
- * @returns {Promise<IOrder[]>}
  */
-export const getAllOrders = async (): Promise<IOrder[]> => {
+export const getAllOrders = async () => {
   const orders = await OrderModel.find().populate('details.articleId')
   if (!orders) throw new httpErrors.NotFound('Orders not found')
 
@@ -20,12 +18,10 @@ export const getAllOrders = async (): Promise<IOrder[]> => {
  * Get one order
  *
  * @param {string} trackingNumber
- * @returns {Promise<IOrder>}
  */
-export const getOneOrder = async (trackingNumber: string): Promise<IOrder> => {
-  const order = await OrderModel.findById(trackingNumber).populate(
-    'details.articleId'
-  )
+export const getOneOrder = async (trackingNumber: string) => {
+  const order =
+    await OrderModel.findById(trackingNumber).populate('details.articleId')
   if (!order) throw new httpErrors.NotFound('Order not found')
 
   return order
@@ -35,9 +31,8 @@ export const getOneOrder = async (trackingNumber: string): Promise<IOrder> => {
  * Get one order by user id
  *
  * @param {string} userId
- * @returns {Promise<IOrder>}
  */
-export const getOneOrderByUserId = async (userId: string): Promise<IOrder> => {
+export const getOneOrderByUserId = async (userId: string) => {
   const order = await OrderModel.findOne({ userId }).populate(
     'details.articleId'
   )
@@ -50,7 +45,6 @@ export const getOneOrderByUserId = async (userId: string): Promise<IOrder> => {
  * Save order
  *
  * @param {IOrder} order
- * @returns {Promise<IOrder>}
  */
 export const saveOrder = async (order: IOrder): Promise<IOrder> => {
   const newOrder = new OrderModel(order)
@@ -60,14 +54,12 @@ export const saveOrder = async (order: IOrder): Promise<IOrder> => {
 
   // Update order article stock
   try {
-    const populatedOrder = await savedOrder.populate<IOrder>(
-      'details.articleId'
-    )
+    const populatedOrder =
+      await savedOrder.populate<IOrder>('details.articleId')
 
     const articleIds: string[] = Object.values(populatedOrder.details).map(
-      /* eslint-disable-next-line */
-      (detail: any) => detail.articleId.id
-    ) as string[]
+      detail => detail.articleId._id.toString()
+    )
 
     const articles = await getAllArticlesByID(articleIds)
     if (articles.length === 0)
@@ -101,12 +93,11 @@ export const saveOrder = async (order: IOrder): Promise<IOrder> => {
  *
  * @param {string} trackingNumber
  * @param {IOrder} order
- * @returns {Promise<IOrder>}
  */
 export const updateOneOrder = async (
   trackingNumber: string,
   order: UpdateQuery<IOrder>
-): Promise<any> => {
+) => {
   const updatedOrder = await OrderModel.findByIdAndUpdate(
     trackingNumber,
     order,

@@ -17,17 +17,10 @@ const dbConnection = () => {
 
   return {
     connect: async () => {
-      try {
-        return await mongoose.connect(MONGO_URI, {
-          useNewUrlParser: true,
-          useUnifiedTopology: true
-        } as ConnectOptions)
-      } catch (error) {
-        console.error(
-          'MongoDB connection error. Please make sure MongoDB is running. ' +
-            error
-        )
-      }
+      return await mongoose.connect(MONGO_URI, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true
+      } as ConnectOptions)
     },
     disconnect: () => mongoose.connection.close()
   }

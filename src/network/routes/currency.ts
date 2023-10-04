@@ -1,17 +1,30 @@
-import { Router } from 'express'
+import { Request, Router } from 'express'
 
 import { storeCurrencySchema } from '../../schemas/currency'
 import validatorCompiler from './utils/validatorCompiler'
 import response from './response'
 import CurrencyRepository from '../../repositories/currency'
 
-const CurrencyRouter = Router()
+type CurrencyRequest = Request<
+  { id: string },
+  Record<string, never>,
+  {
+    id: string
+    name: string
+    symbol: string
+    rate: number
+    decimals: number
+    sign: string
+    isDefault: boolean
+  }
+>
+
+const CurrencyRouter: Router = Router()
 
 CurrencyRouter.route('/currency')
   .post(
     validatorCompiler(storeCurrencySchema, 'body'),
-    async (req, res, next) => {
-      /* eslint-disable */
+    async (req: CurrencyRequest, res, next) => {
       const {
         body: { id, name, symbol, rate, decimals, sign, isDefault }
       } = req

@@ -49,10 +49,6 @@ RUN pnpm run env:${APP_ENV}
 
 RUN if [ ! -f "${APP_DIR}.env" ]; then echo "Env file not found." && exit 1; fi
 
-# Injects the env variables from github actions
-# https://docs.github.com/en/actions/reference/environment-variables
-RUN echo "Injecting env variables from github actions..."
-
 ##
 ## STAGE 1: build
 ##

@@ -1,7 +1,7 @@
-import { Router } from 'express'
+import { Request, Router } from 'express'
 import httpErrors from 'http-errors'
 import UserTransactionRepository from '../../repositories/userTransaction'
-import auth from './utils/auth'
+import { verifyByRole, verifyIsCurrentUser, verifyUser } from './utils/auth'
 import {
   storeUserTransactionSchema,
   userTransactionIDSchema,
@@ -12,14 +12,24 @@ import validatorCompiler from './utils/validatorCompiler'
 import response from './response'
 import { userIDSchema } from '../../schemas/user'
 
-const TransactionRouter = Router()
+type TransationRequest = Request<
+  { id: string },
+  Record<string, never>,
+  { receiverId: string; amount: number }
+>
+type TransationVerifyRequest = Request<
+  { secureToken: string },
+  Record<string, never>,
+  { _id: string }
+>
+const TransactionRouter: Router = Router()
 
 const NOT_ALLOWED_TO_BE_HERE = 'You are not allowed here!'
 
 TransactionRouter.route('/transfer/user/:id')
   .get(
     validatorCompiler(userIDSchema, 'params'),
-    auth.verifyIsCurrentUser(),
+    verifyIsCurrentUser(),
     async (req, res, next) => {
       try {
         const {
@@ -49,10 +59,9 @@ TransactionRouter.route('/transfer/user/:id')
   .post(
     validatorCompiler(storeUserTransactionSchema, 'body'),
     validatorCompiler(userIDSchema, 'params'),
-    auth.verifyIsCurrentUser(),
-    async (req, res, next) => {
+    verifyIsCurrentUser(),
+    async (req: TransationRequest, res, next) => {
       try {
-        /* eslint-disable */
         const {
           currentUser,
           body: { receiverId, amount },
@@ -83,7 +92,7 @@ TransactionRouter.route('/transfer/user/:id')
 
 TransactionRouter.route('/transfer/:transferId/user/:id').get(
   validatorCompiler(userTransactionIDSchema, 'params'),
-  auth.verifyUser(),
+  verifyUser(),
   async (req, res, next) => {
     try {
       const {
@@ -125,7 +134,7 @@ TransactionRouter.route('/transfer/:transferId/user/:id').get(
 
 TransactionRouter.route('/transfer/owner/:id').get(
   validatorCompiler(userIDSchema, 'params'),
-  auth.verifyUser(),
+  verifyUser(),
   async (req, res, next) => {
     try {
       const {
@@ -158,8 +167,8 @@ TransactionRouter.route('/transfer/owner/:id').get(
 TransactionRouter.route('/transfer/verify/:secureToken').patch(
   validatorCompiler(userTransactionSecureTokenSchema, 'params'),
   validatorCompiler(realUserTransactionIDSchema, 'body'),
-  auth.verifyByRole('salesman'),
-  async (req, res, next) => {
+  verifyByRole('salesman'),
+  async (req: TransationVerifyRequest, res, next) => {
     try {
       const {
         currentUser,

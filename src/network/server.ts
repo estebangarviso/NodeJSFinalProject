@@ -1,3 +1,4 @@
+import '../utils/env'
 import { NODE_ENV, PORT } from '../config'
 import express, { Express } from 'express'
 import morgan from 'morgan'
@@ -22,9 +23,8 @@ class Server {
     this._app.use(morgan(NODE_ENV === 'development' ? 'dev' : 'combined'))
     this._app.use(express.urlencoded({ extended: false }))
     // Swagger
-    if (NODE_ENV === 'development') {
-      applySwagger(this._app)
-    }
+    if (NODE_ENV === 'development') applySwagger(this._app)
+
     applyRoutes(this._app)
   }
 

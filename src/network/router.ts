@@ -1,5 +1,4 @@
-import httpErrors from 'http-errors'
-import { Application, Response, Request, NextFunction } from 'express'
+import { Application, Response, Request } from 'express'
 
 import articleRouter from './routes/article'
 import userRouter from './routes/user'
@@ -28,9 +27,9 @@ const applyRoutes = (app: Application) => {
     (error: TypeError & { status: number }, req: Request, res: Response) => {
       console.error(error)
       response({
-        message: error?.message || 'Internal Server Error',
+        message: error?.message || 'Forbidden',
         res,
-        status: error?.status || new httpErrors.InternalServerError().status,
+        status: error?.status || 403,
         error: true
       })
     }

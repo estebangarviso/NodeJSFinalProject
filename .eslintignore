@@ -1,2 +1,7 @@
 **/*.d.ts
-test/**/*.ts
+tests/**/*.ts
+dist/**/*
+scripts/**/*
+.eslintrc.js
+jest.config.js
+lint-staged.config.js

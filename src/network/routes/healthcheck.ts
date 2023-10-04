@@ -1,9 +1,9 @@
 import { Router } from 'express'
 import response from './response'
 
-const HealthCheckRouter = Router()
+const HealthCheckRouter: Router = Router()
 
-HealthCheckRouter.route('/healthcheck').get(async (req, res, next) => {
+HealthCheckRouter.route('/healthcheck').get((req, res, next) => {
   try {
     response({
       error: false,
